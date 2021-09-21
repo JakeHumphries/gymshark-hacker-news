@@ -2,14 +2,16 @@ package consumer
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 )
 
 type Item struct {
-	By, Title, Url               string
-	ItemType                     string `json:"type"`
-	Descendants, Id, Score, Time int
-	Kids                         []int
+	By, Title, Url, Text                       string
+	ItemType                                   string `json:"type"`
+	Descendants, Id, Score, Time, Parent, Poll int
+	Kids, Parts                                []int
+	Deleted, Dead                              bool
 }
 
 func Consume(httpService DataService) {
@@ -29,7 +31,7 @@ func Consume(httpService DataService) {
 
 func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
 	var wg sync.WaitGroup
-	const goRoutines = 10
+	var goRoutines = runtime.NumCPU()
 	wg.Add(goRoutines)
 
 	for i := 0; i < goRoutines; i++ {
@@ -37,7 +39,10 @@ func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
 			for id := range idChan {
 				func(id2 int) {
 					item := getItem(httpService, id2)
-					itemChan <- item
+					if !item.Dead && !item.Deleted {
+						itemChan <- item
+					}
+
 				}(id)
 			}
 			wg.Done()
