@@ -2,22 +2,54 @@ package consumer
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
+	"sync"
 )
 
-func Consume(httpService DataService) {
-	url := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
-	resp, err := httpService.Get(url)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+type Item struct {
+	By, Title, Url               string
+	ItemType                     string `json:"type"`
+	Descendants, Id, Score, Time int
+	Kids                         []int
+}
 
-	responseData, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-    }
-    fmt.Println(string(responseData))
+func Consume(httpService DataService) {
+	ids := getTopStories(httpService)
+
+	idChan := make(chan int)
+	itemChan := make(chan Item)
+
+	go populateIdChan(idChan, ids)
+
+	go fanOutIds(idChan, itemChan, httpService)
+
+	for i := range itemChan {
+		fmt.Println(i)
+	}
+}
+
+func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
+	var wg sync.WaitGroup
+	const goRoutines = 10
+	wg.Add(goRoutines)
+
+	for i := 0; i < goRoutines; i++ {
+		go func() {
+			for id := range idChan {
+				func(id2 int) {
+					item := getItem(httpService, id2)
+					itemChan <- item
+				}(id)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	close(itemChan)
+}
+
+func populateIdChan(c chan int, ids []int) {
+	for _, id := range ids {
+		c <- id
+	}
+	close(c)
 }
