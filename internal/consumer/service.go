@@ -1,20 +1,32 @@
 package consumer
 
 import (
-	"fmt"
+	"context"
 	"runtime"
 	"sync"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Item struct {
-	By, Title, Url, Text                       string
-	ItemType                                   string `json:"type"`
-	Descendants, Id, Score, Time, Parent, Poll int
-	Kids, Parts                                []int
-	Deleted, Dead                              bool
+	By          string `bson:"by"`
+	Title       string `bson:"title"`
+	Url         string `bson:"url"`
+	Text        string `bson:"text"`
+	ItemType    string `bson:"itemType" json:"type"`
+	Descendants int    `bson:"descendants"`
+	Id          int    `bson:"id"`
+	Score       int    `bson:"score"`
+	Time        int    `bson:"time"`
+	Parent      int    `bson:"parent"`
+	Poll        int    `bson:"poll"`
+	Kids        []int  `bson:"kids"`
+	Parts       []int  `bson:"parts"`
+	Deleted     bool   `bson:"deleted"`
+	Dead        bool   `bson:"dead"`
 }
 
-func Consume(httpService DataService) {
+func Consume(ctx context.Context, mongoClient *mongo.Client, httpService DataService) {
 	ids := getTopStories(httpService)
 
 	idChan := make(chan int)
@@ -25,7 +37,7 @@ func Consume(httpService DataService) {
 	go fanOutIds(idChan, itemChan, httpService)
 
 	for i := range itemChan {
-		fmt.Println(i)
+		saveItem(ctx, mongoClient, i)
 	}
 }
 

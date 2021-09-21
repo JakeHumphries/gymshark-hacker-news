@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-func Connect(ctx context.Context) (*mongo.Client, error) {
+func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 	url := "mongodb://admin:admin@localhost:27017"
 
 	fmt.Printf("connect to mongodb at: %v", url)
@@ -35,4 +35,16 @@ func Connect(ctx context.Context) (*mongo.Client, error) {
 	fmt.Println("connected successfully to mongodb")
 
 	return client, nil
+}
+
+func saveItem(ctx context.Context, mongoClient *mongo.Client, document interface{}) {
+	database := mongoClient.Database("hacker-news")
+	itemsCollection := database.Collection("items")
+
+	insertResult, err := itemsCollection.InsertOne(ctx, document)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(insertResult.InsertedID)
+
 }
