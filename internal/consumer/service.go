@@ -2,9 +2,11 @@ package consumer
 
 import (
 	"context"
+	"log"
 	"runtime"
 	"sync"
 
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,7 +29,10 @@ type Item struct {
 }
 
 func Consume(ctx context.Context, mongoClient *mongo.Client, httpService DataService) {
-	ids := getTopStories(httpService)
+	ids, err := getTopStories(httpService)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "Consume: "))
+	}
 
 	idChan := make(chan int)
 	itemChan := make(chan Item)
@@ -37,7 +42,10 @@ func Consume(ctx context.Context, mongoClient *mongo.Client, httpService DataSer
 	go fanOutIds(idChan, itemChan, httpService)
 
 	for i := range itemChan {
-		saveItem(ctx, mongoClient, i)
+		err := saveItem(ctx, mongoClient, i)
+		if err != nil {
+			log.Print(errors.Wrap(err, "Consume: "))
+		}
 	}
 }
 
@@ -50,9 +58,13 @@ func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
 		go func() {
 			for id := range idChan {
 				func(id2 int) {
-					item := getItem(httpService, id2)
+					item, err := getItem(httpService, id2)
+					if err != nil {
+						log.Fatal(errors.Wrap(err, "Fan out ids: "))
+					}
+
 					if !item.Dead && !item.Deleted {
-						itemChan <- item
+						itemChan <- *item
 					}
 
 				}(id)

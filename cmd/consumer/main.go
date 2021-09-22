@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
+	"log"
 	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
+	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 )
 
@@ -18,8 +18,7 @@ func main() {
 	mongoClient, err := consumer.ConnectDb(ctx)
 
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(errors.Wrap(err, "Main: "))
 	}
 
 	c := cron.New()
