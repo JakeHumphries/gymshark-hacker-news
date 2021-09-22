@@ -12,7 +12,7 @@ import (
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 	url := "mongodb://admin:admin@localhost:27017"
 
-	fmt.Printf("connect to mongodb at: %v", url)
+	fmt.Printf("connecting to mongodb at: %v", url)
 
 	opts := options.Client()
 
@@ -37,14 +37,14 @@ func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 	return client, nil
 }
 
-func saveItem(ctx context.Context, mongoClient *mongo.Client, document interface{}) {
+func saveItem(ctx context.Context, mongoClient *mongo.Client, item Item) {
 	database := mongoClient.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
-	insertResult, err := itemsCollection.InsertOne(ctx, document)
+	_, err := itemsCollection.InsertOne(ctx, item)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(insertResult.InsertedID)
+	fmt.Printf("Inserted Record: %v \n", item.Id)
 
 }
