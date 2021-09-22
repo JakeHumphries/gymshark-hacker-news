@@ -1,7 +1,7 @@
 package consumer
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"runtime"
 	"sync"
@@ -27,8 +27,9 @@ type Item struct {
 	Dead        bool   `bson:"dead"`
 }
 
-func Consume(ctx context.Context, mongoRepo DBRepository, httpService DataService) {
-	ids, err := getTopStories(httpService)
+func Consume(dbRepo DbRepository, dataService DataService) {
+	fmt.Println("this is the start of the fn")
+	ids, err := dataService.getTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Consume: "))
 	}
@@ -38,17 +39,17 @@ func Consume(ctx context.Context, mongoRepo DBRepository, httpService DataServic
 
 	go populateIdChan(idChan, ids)
 
-	go fanOutIds(idChan, itemChan, httpService)
+	go fanOutIds(idChan, itemChan, dataService)
 
 	for i := range itemChan {
-		err := mongoRepo.Save(i)
+		err := dbRepo.SaveItem(i)
 		if err != nil {
 			log.Print(errors.Wrap(err, "Consume: "))
 		}
 	}
 }
 
-func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
+func fanOutIds(idChan chan int, itemChan chan Item, dataService DataService) {
 	var wg sync.WaitGroup
 	var goRoutines = runtime.NumCPU()
 	wg.Add(goRoutines)
@@ -57,7 +58,7 @@ func fanOutIds(idChan chan int, itemChan chan Item, httpService DataService) {
 		go func() {
 			for id := range idChan {
 				func(id2 int) {
-					item, err := getItem(httpService, id2)
+					item, err := dataService.getItem(id2)
 					if err != nil {
 						log.Fatal(errors.Wrap(err, "Fan out ids: "))
 					}

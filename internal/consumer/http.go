@@ -10,22 +10,18 @@ import (
 )
 
 type DataService interface {
-	Get(url string) (resp *http.Response, err error)
+	getTopStories() ([]int, error)
+	getItem(id int) (*Item, error)
 }
 
 type HttpService struct {
 }
 
-func (hs HttpService) Get(url string) (resp *http.Response, err error) {
-	r, e := http.Get(url)
-	return r, e
-}
-
 const hnUrl string = "https://hacker-news.firebaseio.com/"
 
-func getTopStories(httpService DataService) ([]int, error) {
+func (hs HttpService) getTopStories() ([]int, error) {
 	url := fmt.Sprintf("%sv0/topstories.json?print=pretty", hnUrl)
-	resp, err := httpService.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "Get top stories: ")
 	}
@@ -40,9 +36,9 @@ func getTopStories(httpService DataService) ([]int, error) {
 	return ids, nil
 }
 
-func getItem(httpService DataService, id int) (*Item, error) {
+func (hs HttpService) getItem(id int) (*Item, error) {
 	url := fmt.Sprintf("%sv0/item/%d.json?print=pretty", hnUrl, id)
-	resp, err := httpService.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "Get item: ")
 	}

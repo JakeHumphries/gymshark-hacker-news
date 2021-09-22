@@ -23,8 +23,8 @@ func main() {
 
 	c := cron.New()
 
-	c.AddFunc("0 30 * * * *", func() {
-		consumer.Consume(ctx, consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
+	c.AddFunc("0 38 * * * *", func() {
+		consumer.Consume(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
 	})
 
 	c.Run()

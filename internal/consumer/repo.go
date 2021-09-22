@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type DBRepository interface {
-	Save(document interface{}) error
+type DbRepository interface {
+	SaveItem(item Item) error
 }
 
 type MongoRepository struct {
@@ -19,14 +19,15 @@ type MongoRepository struct {
 	Ctx context.Context
 }
 
-func (mr MongoRepository) Save(document interface{}) error {
+func (mr MongoRepository) SaveItem(item Item) error {
 	database := mr.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
-	_, err := itemsCollection.InsertOne(mr.Ctx, document)
+	_, err := itemsCollection.InsertOne(mr.Ctx, item)
 	if err != nil {
 		return errors.Wrap(err, "Save item: ")
 	}
+	fmt.Printf("Inserted Record: %v \n", item.Id)
 
 	return nil
 }
@@ -34,7 +35,7 @@ func (mr MongoRepository) Save(document interface{}) error {
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 	url := "mongodb://admin:admin@localhost:27017"
 
-	fmt.Printf("connecting to mongodb at: %v", url)
+	fmt.Printf("connecting to mongodb at: %v \n", url)
 
 	opts := options.Client()
 
