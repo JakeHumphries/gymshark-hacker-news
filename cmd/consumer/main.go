@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -21,5 +22,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	consumer.Consume(ctx, mongoClient, consumer.HttpService{})
+	c := cron.New()
+
+	c.AddFunc("0 30 * * * *", func() { consumer.Consume(ctx, mongoClient, consumer.HttpService{}) })
+
+	c.Run()
 }
