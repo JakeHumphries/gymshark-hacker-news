@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Item struct {
@@ -28,7 +27,7 @@ type Item struct {
 	Dead        bool   `bson:"dead"`
 }
 
-func Consume(ctx context.Context, mongoClient *mongo.Client, httpService DataService) {
+func Consume(ctx context.Context, mongoRepo DBRepository, httpService DataService) {
 	ids, err := getTopStories(httpService)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Consume: "))
@@ -42,7 +41,7 @@ func Consume(ctx context.Context, mongoClient *mongo.Client, httpService DataSer
 	go fanOutIds(idChan, itemChan, httpService)
 
 	for i := range itemChan {
-		err := saveItem(ctx, mongoClient, i)
+		err := mongoRepo.Save(i)
 		if err != nil {
 			log.Print(errors.Wrap(err, "Consume: "))
 		}
