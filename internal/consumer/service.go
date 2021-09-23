@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"fmt"
 	"log"
 	"runtime"
 	"sync"
@@ -28,7 +27,6 @@ type Item struct {
 }
 
 func Consume(dbRepo DbRepository, dataService DataService) {
-	fmt.Println("this is the start of the fn")
 	ids, err := dataService.getTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Consume: "))
