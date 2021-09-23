@@ -26,7 +26,7 @@ type Item struct {
 	Dead        bool   `bson:"dead"`
 }
 
-func Consume(dbRepo DbRepository, dataService DataService) {
+func Execute(dbRepo DbRepository, dataService DataService) {
 	ids, err := dataService.getTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Consume: "))

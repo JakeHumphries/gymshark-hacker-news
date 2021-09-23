@@ -32,14 +32,14 @@ func (m *DataServiceMock) getItem(id int) (*Item, error) {
 	return &item, nil
 }
 
-func TestConsumer_Consume(t *testing.T) {
+func TestConsumer_Execute(t *testing.T) {
 
 	dbrepoMock := new(DbRepoMock)
 	dataServiceMock := new(DataServiceMock)
 
 	dbrepoMock.On("SaveItem").Return(nil) 
 
-	Consume(dbrepoMock, dataServiceMock)
+	Execute(dbrepoMock, dataServiceMock)
 
 	dbrepoMock.AssertNumberOfCalls(t, "SaveItem", 5)
 	dbrepoMock.AssertExpectations(t)
