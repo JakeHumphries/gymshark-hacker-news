@@ -30,7 +30,10 @@ func (hs HttpService) getTopStories() ([]int, error) {
 	}
 
 	var ids = []int{}
-	json.Unmarshal(responseData, &ids)
+	err = json.Unmarshal(responseData, &ids)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get top stories: ")
+	}
 
 	return ids, nil
 }
@@ -48,7 +51,11 @@ func (hs HttpService) getItem(id int) (*Item, error) {
 	}
 
 	var item Item
-	json.Unmarshal(responseData, &item)
+	err = json.Unmarshal(responseData, &item)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get item: ")
+	}
+
 
 	return &item, nil
 }
