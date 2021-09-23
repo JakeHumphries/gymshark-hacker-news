@@ -10,9 +10,9 @@ type DbRepoMock struct {
 	mock.Mock
 }
 
-func (m *DbRepoMock) SaveItem(item Item) error {
+func (m *DbRepoMock) SaveItem(item Item) (*Item, error) {
 	m.Called()
-	return nil
+	return nil, nil
 }
 
 type DataServiceMock struct {

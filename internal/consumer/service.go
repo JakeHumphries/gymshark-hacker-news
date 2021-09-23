@@ -26,10 +26,10 @@ type Item struct {
 }
 
 // Execute - Entry point for consumer service
-func Execute(dbRepo DbRepository, dataService DataService) {
+func Execute(databaseRepository DatabaseRepository, dataService DataService) {
 	ids, err := dataService.getTopStories()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "Consume: "))
+		log.Fatal(errors.Wrap(err, "consume: "))
 	}
 
 	const workerCount = 10
@@ -42,9 +42,9 @@ func Execute(dbRepo DbRepository, dataService DataService) {
 	go fanOutIds(workerCount, idChan, itemChan, dataService)
 
 	for i := range itemChan {
-		err := dbRepo.SaveItem(i)
+		_, err := databaseRepository.SaveItem(i)
 		if err != nil {
-			log.Print(errors.Wrap(err, "Consume: "))
+			log.Print(errors.Wrap(err, "consume: "))
 		}
 	}
 }
@@ -59,7 +59,7 @@ func fanOutIds(workerCount int, idChan chan int, itemChan chan Item, dataService
 				func(id2 int) {
 					item, err := dataService.getItem(id2)
 					if err != nil {
-						log.Print(errors.Wrap(err, "Fan out ids: "))
+						log.Print(errors.Wrap(err, "fan out ids: "))
 					} else if !item.Dead && !item.Deleted {
 						itemChan <- *item
 					}
