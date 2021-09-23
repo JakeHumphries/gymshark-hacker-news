@@ -6,13 +6,14 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type DbRepository interface {
-	SaveItem(item Item) error
+type DatabaseRepository interface {
+	SaveItem(item Item) (*Item, error)
 }
 
 type MongoRepository struct {
@@ -20,21 +21,44 @@ type MongoRepository struct {
 	Ctx    context.Context
 }
 
-func (mr MongoRepository) SaveItem(item Item) error {
+func (mr MongoRepository) SaveItem(item Item) (*Item, error) {
 	database := mr.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
-	_, err := itemsCollection.InsertOne(mr.Ctx, item)
+	opts := options.Update().SetUpsert(true)
+
+	update := bson.M{
+        "$set": item,
+    }
+	_, err := itemsCollection.UpdateOne(mr.Ctx, bson.M{"id": item.Id}, update, opts)
+
 	if err != nil {
-		return errors.Wrap(err, "Save item: ")
+		return nil, errors.Wrap(err, "save item: ")
 	}
 	fmt.Printf("Inserted Record: %v \n", item.Id)
 
-	return nil
+	return &item, nil
 }
 
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
-	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"))
+	user, exists := os.LookupEnv("DB_USER")
+	if !exists {
+		return nil, errors.New("err: env var database user doesnt exist")
+	}
+	pass, exists := os.LookupEnv("DB_PASS")
+	if !exists {
+		return nil, errors.New("err: env var database pass doesnt exist")
+	}
+	name, exists := os.LookupEnv("DB_NAME")
+	if !exists {
+		return nil, errors.New("err: env var database name doesnt exist")
+	}
+	port, exists := os.LookupEnv("DB_PORT")
+	if !exists {
+		return nil, errors.New("err: env var database port doesnt exist")
+	}
+
+	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", user, pass, name, port)
 
 	fmt.Printf("connecting to mongodb at: %v \n", url)
 
@@ -44,13 +68,13 @@ func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "Connect DB: ")
+		return nil, errors.Wrap(err, "connect db: ")
 	}
 
 	err = client.Ping(ctx, readpref.Primary())
 
 	if err != nil {
-		return nil, errors.Wrap(err, "Connect DB: ")
+		return nil, errors.Wrap(err, "connect db: ")
 	}
 
 	fmt.Println("connected successfully to mongodb")
