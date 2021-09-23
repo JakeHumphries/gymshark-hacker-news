@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,7 +34,7 @@ func (mr MongoRepository) SaveItem(item Item) error {
 }
 
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
-	url := "mongodb://admin:admin@localhost:27017"
+	url := fmt.Sprintf("mongodb://%s:%s@gymshark-hacker-news_mongo_1:27017", os.Getenv("DB_USER"), os.Getenv("DB_PASS"))
 
 	fmt.Printf("connecting to mongodb at: %v \n", url)
 

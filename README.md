@@ -6,14 +6,9 @@ This is a project to help get up to speed with the WoW, stack and tooling the gy
 - API Service to consume and return data from the DB
 - GRPC Service
 
-
-## Background Information
-
-TODO 
-
 ## Running Locally
 
-TODO 
+run `docker-compose up` to initialize all micro services and a mongo instance
 
 ## API
 
