@@ -6,7 +6,6 @@ import (
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
 	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 )
 
@@ -14,7 +13,7 @@ func init() {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("loading .env file: %s", err)
 	}
 }
 
@@ -25,16 +24,18 @@ func main() {
 	mongoClient, err := consumer.ConnectDb(ctx)
 
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "Main: "))
+		log.Fatalf("connecting to db: %s", err)
 	}
 
 	c := cron.New()
 
 	consumer.Execute(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
 
-	c.AddFunc("0 30 * * * *", func() {
+	cronCb := func() {
 		consumer.Execute(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
-	})
+	}
+
+	c.AddFunc("0 30 * * * *", cronCb)
 
 	c.Run()
 }

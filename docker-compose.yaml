@@ -1,7 +1,6 @@
 version: '3.7'
 
 services:
-
   mongo:
     image: mongo
     restart: always
@@ -10,7 +9,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-
   consumer:
     build:
       context: .

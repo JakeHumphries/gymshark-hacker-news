@@ -17,7 +17,7 @@ type DbRepository interface {
 
 type MongoRepository struct {
 	Client *mongo.Client
-	Ctx context.Context
+	Ctx    context.Context
 }
 
 func (mr MongoRepository) SaveItem(item Item) error {
@@ -34,7 +34,7 @@ func (mr MongoRepository) SaveItem(item Item) error {
 }
 
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
-	url := fmt.Sprintf("mongodb://%s:%s@gymshark-hacker-news_mongo_1:27017", os.Getenv("DB_USER"), os.Getenv("DB_PASS"))
+	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"))
 
 	fmt.Printf("connecting to mongodb at: %v \n", url)
 
