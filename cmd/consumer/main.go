@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
 	"github.com/joho/godotenv"
@@ -22,7 +21,7 @@ func init() {
 
 func main() {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	mongoClient, err := consumer.ConnectDb(ctx)
@@ -33,8 +32,10 @@ func main() {
 
 	c := cron.New()
 
+	consumer.Execute(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
+
 	c.AddFunc("0 30 * * * *", func() {
-		consumer.Consume(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
+		consumer.Execute(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
 	})
 
 	c.Run()
