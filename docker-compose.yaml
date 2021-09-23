@@ -13,5 +13,3 @@ services:
     build:
       context: .
       dockerfile: docker/consumer/Dockerfile
-    volumes:
-      - .:/go/src
