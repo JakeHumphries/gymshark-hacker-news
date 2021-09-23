@@ -11,7 +11,6 @@ import (
 )
 
 func init() {
-
 	err := godotenv.Load(".env")
 
 	if err != nil {
@@ -20,7 +19,6 @@ func init() {
 }
 
 func main() {
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

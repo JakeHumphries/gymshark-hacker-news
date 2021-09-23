@@ -14,8 +14,7 @@ type DataService interface {
 	getItem(id int) (*Item, error)
 }
 
-type HttpService struct {
-}
+type HttpService struct {}
 
 const hnUrl string = "https://hacker-news.firebaseio.com/"
 

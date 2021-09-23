@@ -25,23 +25,21 @@ func (m *DataServiceMock) getTopStories() ([]int, error) {
 
 func (m *DataServiceMock) getItem(id int) (*Item, error) {
 	item := Item{
-    Deleted: false,
-    Dead: false,
+		Deleted: false,
+		Dead:    false,
 	}
 
 	return &item, nil
 }
 
 func TestConsumer_Execute(t *testing.T) {
-
 	dbrepoMock := new(DbRepoMock)
 	dataServiceMock := new(DataServiceMock)
 
-	dbrepoMock.On("SaveItem").Return(nil) 
+	dbrepoMock.On("SaveItem").Return(nil)
 
 	Execute(dbrepoMock, dataServiceMock)
 
 	dbrepoMock.AssertNumberOfCalls(t, "SaveItem", 5)
 	dbrepoMock.AssertExpectations(t)
-
 }
