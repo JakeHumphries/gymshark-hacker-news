@@ -6,9 +6,19 @@ import (
 	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 )
+
+func init() {
+
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
 
 func main() {
 
@@ -23,7 +33,7 @@ func main() {
 
 	c := cron.New()
 
-	c.AddFunc("0 38 * * * *", func() {
+	c.AddFunc("0 30 * * * *", func() {
 		consumer.Consume(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
 	})
 
