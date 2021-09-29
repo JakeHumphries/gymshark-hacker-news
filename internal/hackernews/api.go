@@ -1,4 +1,4 @@
-package consumer
+package hackernews
 
 import (
 	"encoding/json"
@@ -6,22 +6,18 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
 	"github.com/pkg/errors"
 )
 
-// DataService - Interface for getting hackernews data
-type DataService interface {
-	getTopStories() ([]int, error)
-	getItem(id int) (*Item, error)
-}
+// Api to get data from the hacker news api 
+type Api struct {}
 
-// HttpService - Implementation of the Dataservice for http
-type HttpService struct {}
+const hackerNewsUrl string = "https://hacker-news.firebaseio.com/"
 
-const hnUrl string = "https://hacker-news.firebaseio.com/"
-
-func (hs HttpService) getTopStories() ([]int, error) {
-	url := fmt.Sprintf("%sv0/topstories.json?print=pretty", hnUrl)
+// GetTopStories gets the top stories from the hacker news api
+func (a Api) GetTopStories() ([]int, error) {
+	url := fmt.Sprintf("%sv0/topstories.json?print=pretty", hackerNewsUrl)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "get top stories: ")
@@ -40,8 +36,9 @@ func (hs HttpService) getTopStories() ([]int, error) {
 	return ids, nil
 }
 
-func (hs HttpService) getItem(id int) (*Item, error) {
-	url := fmt.Sprintf("%sv0/item/%d.json?print=pretty", hnUrl, id)
+// GetItem gets a specific item from the hacker news api based on an item id
+func (a Api) GetItem(id int) (*models.Item, error) {
+	url := fmt.Sprintf("%sv0/item/%d.json?print=pretty", hackerNewsUrl, id)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "get item: ")
@@ -52,7 +49,7 @@ func (hs HttpService) getItem(id int) (*Item, error) {
 		return nil, errors.Wrap(err, "get item: ")
 	}
 
-	var item Item
+	var item models.Item
 	err = json.Unmarshal(responseData, &item)
 	if err != nil {
 		return nil, errors.Wrap(err, "get item: ")

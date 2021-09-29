@@ -3,28 +3,29 @@ package consumer
 import (
 	"testing"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
 	"github.com/stretchr/testify/mock"
 )
 
-type DbRepoMock struct {
+type MockItemSaver struct {
 	mock.Mock
 }
 
-func (m *DbRepoMock) SaveItem(item Item) (*Item, error) {
+func (m *MockItemSaver) SaveItem(item models.Item) (*models.Item, error) {
 	m.Called()
 	return nil, nil
 }
 
-type DataServiceMock struct {
+type MockDataGetter struct {
 	mock.Mock
 }
 
-func (m *DataServiceMock) getTopStories() ([]int, error) {
+func (m *MockDataGetter) GetTopStories() ([]int, error) {
 	return []int{1, 2, 3, 4, 5}, nil
 }
 
-func (m *DataServiceMock) getItem(id int) (*Item, error) {
-	item := Item{
+func (m *MockDataGetter) GetItem(id int) (*models.Item, error) {
+	item := models.Item{
 		Deleted: false,
 		Dead:    false,
 	}
@@ -33,8 +34,8 @@ func (m *DataServiceMock) getItem(id int) (*Item, error) {
 }
 
 func TestConsumer_Execute(t *testing.T) {
-	dbrepoMock := new(DbRepoMock)
-	dataServiceMock := new(DataServiceMock)
+	dbrepoMock := new(MockItemSaver)
+	dataServiceMock := new(MockDataGetter)
 
 	dbrepoMock.On("SaveItem").Return(nil)
 

@@ -4,30 +4,24 @@ import (
 	"log"
 	"sync"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
 	"github.com/pkg/errors"
 )
 
-type Item struct {
-	By          string `bson:"by"`
-	Title       string `bson:"title"`
-	Url         string `bson:"url"`
-	Text        string `bson:"text"`
-	ItemType    string `bson:"itemType" json:"type"`
-	Descendants int    `bson:"descendants"`
-	Id          int    `bson:"id"`
-	Score       int    `bson:"score"`
-	Time        int    `bson:"time"`
-	Parent      int    `bson:"parent"`
-	Poll        int    `bson:"poll"`
-	Kids        []int  `bson:"kids"`
-	Parts       []int  `bson:"parts"`
-	Deleted     bool   `bson:"deleted"`
-	Dead        bool   `bson:"dead"`
+// DataGetter is an interface for getting hackernews data
+type DataGetter interface {
+	GetTopStories() ([]int, error)
+	GetItem(id int) (*models.Item, error)
 }
 
-// Execute - Entry point for consumer service
-func Execute(databaseRepository DatabaseRepository, dataService DataService) {
-	ids, err := dataService.getTopStories()
+// ItemSaver is an interface for saving items to persistance
+type ItemSaver interface {
+	SaveItem(item models.Item) (*models.Item, error)
+}
+
+// Execute is the entry point for consumer service
+func Execute(itemSaver ItemSaver, dataGetter DataGetter) {
+	ids, err := dataGetter.GetTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "consume: "))
 	}
@@ -35,21 +29,21 @@ func Execute(databaseRepository DatabaseRepository, dataService DataService) {
 	const workerCount = 10
 
 	idChan := make(chan int)
-	itemChan := make(chan Item)
+	itemChan := make(chan models.Item)
 
 	go populateIdChan(idChan, ids)
 
-	go fanOutIds(workerCount, idChan, itemChan, dataService)
+	go fanOutIds(workerCount, idChan, itemChan, dataGetter)
 
 	for i := range itemChan {
-		_, err := databaseRepository.SaveItem(i)
+		_, err := itemSaver.SaveItem(i)
 		if err != nil {
 			log.Print(errors.Wrap(err, "consume: "))
 		}
 	}
 }
 
-func fanOutIds(workerCount int, idChan chan int, itemChan chan Item, dataService DataService) {
+func fanOutIds(workerCount int, idChan chan int, itemChan chan models.Item, dataGetter DataGetter) {
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
@@ -57,7 +51,7 @@ func fanOutIds(workerCount int, idChan chan int, itemChan chan Item, dataService
 		go func() {
 			for id := range idChan {
 				func(id2 int) {
-					item, err := dataService.getItem(id2)
+					item, err := dataGetter.GetItem(id2)
 					if err != nil {
 						log.Print(errors.Wrap(err, "fan out ids: "))
 					} else if !item.Dead && !item.Deleted {

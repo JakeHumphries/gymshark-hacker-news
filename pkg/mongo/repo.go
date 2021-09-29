@@ -1,10 +1,11 @@
-package consumer
+package mongo
 
 import (
 	"context"
 	"fmt"
 	"os"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,25 +13,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type DatabaseRepository interface {
-	SaveItem(item Item) (*Item, error)
-}
-
-type MongoRepository struct {
+// Repository is a struct that exposes the mongo client and context
+type Repository struct {
 	Client *mongo.Client
 	Ctx    context.Context
 }
 
-func (mr MongoRepository) SaveItem(item Item) (*Item, error) {
-	database := mr.Client.Database("hacker-news")
+// SaveItem saves items to the mongo database
+func (r Repository) SaveItem(item models.Item) (*models.Item, error) {
+	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
 	opts := options.Update().SetUpsert(true)
 
 	update := bson.M{
-        "$set": item,
-    }
-	_, err := itemsCollection.UpdateOne(mr.Ctx, bson.M{"id": item.Id}, update, opts)
+		"$set": item,
+	}
+	_, err := itemsCollection.UpdateOne(r.Ctx, bson.M{"id": item.Id}, update, opts)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "save item: ")
@@ -40,6 +39,7 @@ func (mr MongoRepository) SaveItem(item Item) (*Item, error) {
 	return &item, nil
 }
 
+// ConnectDb tests the connection to mongo and returns a mongo client
 func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 	user, exists := os.LookupEnv("DB_USER")
 	if !exists {
@@ -71,13 +71,16 @@ func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 		return nil, errors.Wrap(err, "connect db: ")
 	}
 
-	err = client.Ping(ctx, readpref.Primary())
-
-	if err != nil {
-		return nil, errors.Wrap(err, "connect db: ")
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("mongo refused to connect: %v %w", ctx.Err(), err)
+		default:
+			err := client.Ping(ctx, readpref.Primary())
+			if err == nil {
+				fmt.Println("mongo is now connected")
+				return client, nil
+			}
+		}
 	}
-
-	fmt.Println("connected successfully to mongodb")
-
-	return client, nil
 }

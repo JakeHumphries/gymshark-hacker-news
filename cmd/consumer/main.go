@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
+	"github.com/JakeHumphries/gymshark-hacker-news/pkg/mongo"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 )
@@ -21,7 +23,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mongoClient, err := consumer.ConnectDb(ctx)
+	mongoClient, err := mongo.ConnectDb(ctx)
 
 	if err != nil {
 		log.Fatalf("connecting to db: %s", err)
@@ -30,7 +32,7 @@ func main() {
 	c := cron.New()
 
 	execute := func() {
-		consumer.Execute(consumer.MongoRepository{Client: mongoClient, Ctx: ctx}, consumer.HttpService{})
+		consumer.Execute(mongo.Repository{Client: mongoClient, Ctx: ctx}, hackernews.Api{})
 	}
 
 	execute()
