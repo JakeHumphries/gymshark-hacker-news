@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
@@ -38,12 +39,17 @@ func TestConsumer_Execute(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	cfg, err := models.GetConfig()
+	if err != nil {
+		log.Fatalf("loading config: %s", err)
+	}
+
 	dbrepoMock := new(MockItemSaver)
 	dataServiceMock := new(MockDataGetter)
 
 	dbrepoMock.On("SaveItem").Return(nil)
 
-	Execute(ctx, dbrepoMock, dataServiceMock)
+	Execute(ctx, *cfg, dbrepoMock, dataServiceMock)
 
 	dbrepoMock.AssertNumberOfCalls(t, "SaveItem", 5)
 	dbrepoMock.AssertExpectations(t)

@@ -11,7 +11,7 @@ import (
 )
 
 // Api to get data from the hacker news api
-type Api struct {}
+type Api struct{}
 
 const hackerNewsUrl string = "https://hacker-news.firebaseio.com/"
 
@@ -54,7 +54,6 @@ func (a Api) GetItem(id int) (*models.Item, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "get item: ")
 	}
-
 
 	return &item, nil
 }

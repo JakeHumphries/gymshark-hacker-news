@@ -21,22 +21,20 @@ type ItemRepository interface {
 }
 
 // Execute is the entry point for consumer service
-func Execute(ctx context.Context, itemRepository ItemRepository, itemProvider ItemProvider) {
+func Execute(ctx context.Context, cfg models.Config, itemRepository ItemRepository, itemProvider ItemProvider) {
 	ids, err := itemProvider.GetTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "execute: "))
 	}
-
-	const workerCount = 10
 
 	idChan := make(chan int)
 
 	go populateIdChan(idChan, ids)
 
 	var wg sync.WaitGroup
-	wg.Add(workerCount)
+	wg.Add(cfg.WorkerCount)
 
-	for i := 0; i < workerCount; i++ {
+	for i := 0; i < cfg.WorkerCount; i++ {
 		go worker(ctx, idChan, itemProvider, itemRepository, wg)
 	}
 	wg.Wait()
