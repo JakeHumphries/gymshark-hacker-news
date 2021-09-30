@@ -34,8 +34,10 @@ func Execute(ctx context.Context, cfg models.Config, itemRepository ItemReposito
 	var wg sync.WaitGroup
 	wg.Add(cfg.WorkerCount)
 
+	w := NewWorker(itemProvider, itemRepository)
+
 	for i := 0; i < cfg.WorkerCount; i++ {
-		go worker(ctx, idChan, itemProvider, itemRepository, wg)
+		go w.run(ctx, idChan, wg)
 	}
 	wg.Wait()
 }

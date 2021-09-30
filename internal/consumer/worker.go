@@ -8,18 +8,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func worker(ctx context.Context, idChan chan int, itemProvider ItemProvider, itemRepository ItemRepository, wg sync.WaitGroup) {
+// Worker is responsible for doing the work to save items
+type Worker struct {
+	itemProvider ItemProvider
+	itemRepository ItemRepository
+}
+
+// New creates a new worker
+func NewWorker(itemProvider ItemProvider, itemRepository ItemRepository) *Worker {
+	return &Worker{
+		itemProvider: itemProvider,
+		itemRepository: itemRepository,
+	}
+}
+
+func (w *Worker) run(ctx context.Context, idChan chan int, wg sync.WaitGroup) {
 	for id := range idChan {
-		item, err := itemProvider.GetItem(id)
+		item, err := w.itemProvider.GetItem(id)
 		if err != nil {
 			log.Print(errors.Wrap(err, "worker: "))
 		} else if !item.Dead && !item.Deleted {
-			_, err := itemRepository.SaveItem(ctx, *item)
+			_, err := w.itemRepository.SaveItem(ctx, *item)
 			if err != nil {
 				log.Print(errors.Wrap(err, "worker: "))
 			}
 		}
 	}
 	wg.Done()
-
 }
