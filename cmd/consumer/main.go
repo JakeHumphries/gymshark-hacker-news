@@ -6,7 +6,7 @@ import (
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
-	"github.com/JakeHumphries/gymshark-hacker-news/pkg/mongo"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 )

@@ -6,11 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
 )
 
-// Api to get data from the hacker news api 
+// Api to get data from the hacker news api
 type Api struct {}
 
 const hackerNewsUrl string = "https://hacker-news.firebaseio.com/"

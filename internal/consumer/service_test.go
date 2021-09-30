@@ -3,7 +3,7 @@ package consumer
 import (
 	"testing"
 
-	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/stretchr/testify/mock"
 )
 

@@ -4,24 +4,24 @@ import (
 	"log"
 	"sync"
 
-	"github.com/JakeHumphries/gymshark-hacker-news/pkg/models"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
 )
 
-// DataGetter is an interface for getting hackernews data
-type DataGetter interface {
+// ItemProvider is an interface for getting hackernews data
+type ItemProvider interface {
 	GetTopStories() ([]int, error)
 	GetItem(id int) (*models.Item, error)
 }
 
-// ItemSaver is an interface for saving items to persistance
-type ItemSaver interface {
+// ItemRepository is an interface for saving items to persistance
+type ItemRepository interface {
 	SaveItem(item models.Item) (*models.Item, error)
 }
 
 // Execute is the entry point for consumer service
-func Execute(itemSaver ItemSaver, dataGetter DataGetter) {
-	ids, err := dataGetter.GetTopStories()
+func Execute(itemRepository ItemRepository, itemProvider ItemProvider) {
+	ids, err := itemProvider.GetTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "consume: "))
 	}
@@ -33,17 +33,17 @@ func Execute(itemSaver ItemSaver, dataGetter DataGetter) {
 
 	go populateIdChan(idChan, ids)
 
-	go fanOutIds(workerCount, idChan, itemChan, dataGetter)
+	go fanOutIds(workerCount, idChan, itemChan, itemProvider)
 
 	for i := range itemChan {
-		_, err := itemSaver.SaveItem(i)
+		_, err := itemRepository.SaveItem(i)
 		if err != nil {
 			log.Print(errors.Wrap(err, "consume: "))
 		}
 	}
 }
 
-func fanOutIds(workerCount int, idChan chan int, itemChan chan models.Item, dataGetter DataGetter) {
+func fanOutIds(workerCount int, idChan chan int, itemChan chan models.Item, itemProvider ItemProvider) {
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
@@ -51,7 +51,7 @@ func fanOutIds(workerCount int, idChan chan int, itemChan chan models.Item, data
 		go func() {
 			for id := range idChan {
 				func(id2 int) {
-					item, err := dataGetter.GetItem(id2)
+					item, err := itemProvider.GetItem(id2)
 					if err != nil {
 						log.Print(errors.Wrap(err, "fan out ids: "))
 					} else if !item.Dead && !item.Deleted {
