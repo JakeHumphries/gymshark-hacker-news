@@ -23,47 +23,26 @@ type ItemRepository interface {
 func Execute(itemRepository ItemRepository, itemProvider ItemProvider) {
 	ids, err := itemProvider.GetTopStories()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "consume: "))
+		log.Fatal(errors.Wrap(err, "execute: "))
 	}
 
 	const workerCount = 10
 
 	idChan := make(chan int)
-	itemChan := make(chan models.Item)
 
 	go populateIdChan(idChan, ids)
 
-	go fanOutIds(workerCount, idChan, itemChan, itemProvider)
-
-	for i := range itemChan {
-		_, err := itemRepository.SaveItem(i)
-		if err != nil {
-			log.Print(errors.Wrap(err, "consume: "))
-		}
-	}
+	go fanOutIds(workerCount, idChan, itemRepository, itemProvider)
 }
 
-func fanOutIds(workerCount int, idChan chan int, itemChan chan models.Item, itemProvider ItemProvider) {
+func fanOutIds(workerCount int, idChan chan int, itemRepository ItemRepository, itemProvider ItemProvider) {
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
 	for i := 0; i < workerCount; i++ {
-		go func() {
-			for id := range idChan {
-				func(id2 int) {
-					item, err := itemProvider.GetItem(id2)
-					if err != nil {
-						log.Print(errors.Wrap(err, "fan out ids: "))
-					} else if !item.Dead && !item.Deleted {
-						itemChan <- *item
-					}
-				}(id)
-			}
-			wg.Done()
-		}()
+		go worker(idChan, itemProvider, itemRepository, wg)
 	}
 	wg.Wait()
-	close(itemChan)
 }
 
 func populateIdChan(c chan int, ids []int) {
