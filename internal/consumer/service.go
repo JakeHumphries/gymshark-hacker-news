@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"context"
 	"sync"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
@@ -16,11 +17,11 @@ type ItemProvider interface {
 
 // ItemRepository is an interface for saving items to persistance
 type ItemRepository interface {
-	SaveItem(item models.Item) (*models.Item, error)
+	SaveItem(ctx context.Context, item models.Item) (*models.Item, error)
 }
 
 // Execute is the entry point for consumer service
-func Execute(itemRepository ItemRepository, itemProvider ItemProvider) {
+func Execute(ctx context.Context, itemRepository ItemRepository, itemProvider ItemProvider) {
 	ids, err := itemProvider.GetTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "execute: "))
@@ -32,15 +33,11 @@ func Execute(itemRepository ItemRepository, itemProvider ItemProvider) {
 
 	go populateIdChan(idChan, ids)
 
-	go fanOutIds(workerCount, idChan, itemRepository, itemProvider)
-}
-
-func fanOutIds(workerCount int, idChan chan int, itemRepository ItemRepository, itemProvider ItemProvider) {
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
 
 	for i := 0; i < workerCount; i++ {
-		go worker(idChan, itemProvider, itemRepository, wg)
+		go worker(ctx, idChan, itemProvider, itemRepository, wg)
 	}
 	wg.Wait()
 }

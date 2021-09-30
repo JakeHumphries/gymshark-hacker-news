@@ -35,7 +35,7 @@ func main() {
 	c := cron.New()
 
 	execute := func() {
-		consumer.Execute(mongo.Repository{Client: mongoClient, Ctx: ctx}, hackernews.Api{})
+		consumer.Execute(ctx, mongo.Repository{Client: mongoClient}, hackernews.Api{})
 	}
 
 	execute()
