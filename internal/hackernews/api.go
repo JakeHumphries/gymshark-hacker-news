@@ -22,6 +22,11 @@ func (a Api) GetTopStories() ([]int, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "get top stories: ")
 	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, errors.New(fmt.Sprintf("err: bad status back from hacker news, status: %d", resp.StatusCode))
+	}
+
 	responseData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "get top stories: ")
@@ -42,6 +47,10 @@ func (a Api) GetItem(id int) (*models.Item, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "get item: ")
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, errors.New(fmt.Sprintf("err: bad status back from hacker news, status: %d", resp.StatusCode))
 	}
 
 	responseData, err := ioutil.ReadAll(resp.Body)

@@ -35,7 +35,7 @@ func ConnectDb(ctx context.Context, cfg models.Config) (*mongo.Client, error) {
 		default:
 			err := client.Ping(ctx, readpref.Primary())
 			if err == nil {
-				log.Infof("mongo is now connected")
+				log.Info("mongo is now connected")
 				return client, nil
 			}
 		}
