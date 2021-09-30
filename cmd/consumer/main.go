@@ -2,21 +2,24 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
+	log.SetFormatter(&log.JSONFormatter{})
+
 	err := godotenv.Load(".env")
 
 	if err != nil {
 		log.Fatalf("loading .env file: %s", err)
 	}
+
 }
 
 func main() {

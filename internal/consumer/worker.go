@@ -1,10 +1,10 @@
 package consumer
 
 import (
-	"log"
 	"sync"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 func worker(idChan chan int, itemProvider ItemProvider, itemRepository ItemRepository, wg sync.WaitGroup) {

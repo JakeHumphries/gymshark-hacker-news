@@ -1,11 +1,11 @@
 package consumer
 
 import (
-	"log"
 	"sync"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // ItemProvider is an interface for getting hackernews data

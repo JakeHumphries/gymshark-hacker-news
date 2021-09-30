@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	log "github.com/sirupsen/logrus"
 )
 
 // ConnectDb tests the connection to mongo and returns a mongo client
@@ -32,7 +33,7 @@ func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", user, pass, name, port)
 
-	fmt.Printf("connecting to mongodb at: %v \n", url)
+	log.Infof("connecting to mongodb at: %v \n", url)
 
 	opts := options.Client()
 
@@ -50,7 +51,7 @@ func ConnectDb(ctx context.Context) (*mongo.Client, error) {
 		default:
 			err := client.Ping(ctx, readpref.Primary())
 			if err == nil {
-				fmt.Println("mongo is now connected")
+				log.Infof("mongo is now connected")
 				return client, nil
 			}
 		}
