@@ -14,7 +14,7 @@ type Worker struct {
 	itemRepository ItemRepository
 }
 
-// New creates a new worker
+// NewWorker creates a new worker
 func NewWorker(itemProvider ItemProvider, itemRepository ItemRepository) *Worker {
 	return &Worker{
 		itemProvider: itemProvider,

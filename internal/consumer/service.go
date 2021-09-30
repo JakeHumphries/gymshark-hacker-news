@@ -29,8 +29,6 @@ func Execute(ctx context.Context, cfg models.Config, itemRepository ItemReposito
 
 	idChan := make(chan int)
 
-	go populateIdChan(idChan, ids)
-
 	var wg sync.WaitGroup
 	wg.Add(cfg.WorkerCount)
 
@@ -39,12 +37,11 @@ func Execute(ctx context.Context, cfg models.Config, itemRepository ItemReposito
 	for i := 0; i < cfg.WorkerCount; i++ {
 		go w.run(ctx, idChan, wg)
 	}
-	wg.Wait()
-}
 
-func populateIdChan(c chan int, ids []int) {
 	for _, id := range ids {
-		c <- id
+		idChan <- id
 	}
-	close(c)
+	close(idChan)
+
+	wg.Wait()
 }
