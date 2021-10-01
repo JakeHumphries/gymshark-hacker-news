@@ -23,6 +23,8 @@ func (a Api) GetTopStories() ([]int, error) {
 		return nil, errors.Wrap(err, "get top stories")
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, errors.New(fmt.Sprintf("err: bad status back from hacker news, status: %d", resp.StatusCode))
 	}
@@ -48,6 +50,8 @@ func (a Api) GetItem(id int) (*models.Item, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "get item")
 	}
+
+	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, errors.New(fmt.Sprintf("err: bad status back from hacker news, status: %d", resp.StatusCode))
