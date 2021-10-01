@@ -30,12 +30,17 @@ func Execute(ctx context.Context, cfg models.Config, itemRepository ItemReposito
 	idChan := make(chan int)
 
 	var wg sync.WaitGroup
-	wg.Add(cfg.WorkerCount)
 
 	w := NewWorker(itemProvider, itemRepository)
 
 	for i := 0; i < cfg.WorkerCount; i++ {
-		go w.run(ctx, idChan, wg)
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			w.run(ctx, idChan)
+		}()
+
 	}
 
 	for _, id := range ids {

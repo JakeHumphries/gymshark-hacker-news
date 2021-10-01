@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"sync"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +21,7 @@ func NewWorker(itemProvider ItemProvider, itemRepository ItemRepository) *Worker
 	}
 }
 
-func (w *Worker) run(ctx context.Context, idChan chan int, wg sync.WaitGroup) {
+func (w *Worker) run(ctx context.Context, idChan chan int) {
 	for id := range idChan {
 		item, err := w.itemProvider.GetItem(id)
 		if err != nil {
@@ -34,5 +33,4 @@ func (w *Worker) run(ctx context.Context, idChan chan int, wg sync.WaitGroup) {
 			}
 		}
 	}
-	wg.Done()
 }
