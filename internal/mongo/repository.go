@@ -2,10 +2,10 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -27,11 +27,10 @@ func (r Repository) SaveItem(ctx context.Context, item models.Item) (*models.Ite
 		"$set": item,
 	}
 	_, err := itemsCollection.UpdateOne(ctx, bson.M{"id": item.Id}, update, opts)
-
 	if err != nil {
 		return nil, errors.Wrap(err, "save item: ")
 	}
-	fmt.Printf("Inserted Record: %v \n", item.Id)
+	log.Print("Inserted Record: %v \n", item.Id)
 
 	return &item, nil
 }

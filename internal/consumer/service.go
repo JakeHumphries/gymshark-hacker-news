@@ -24,7 +24,7 @@ type ItemRepository interface {
 func Execute(ctx context.Context, cfg models.Config, itemRepository ItemRepository, itemProvider ItemProvider) {
 	ids, err := itemProvider.GetTopStories()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "execute: "))
+		log.Fatal(errors.Wrap(err, "execute"))
 	}
 
 	idChan := make(chan int)

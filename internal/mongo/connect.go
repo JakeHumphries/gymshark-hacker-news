@@ -17,7 +17,7 @@ func ConnectDb(ctx context.Context, cfg models.Config) (*mongo.Client, error) {
 
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseName, cfg.DatabasePort)
 
-	log.Infof("connecting to mongodb at: %v \n", url)
+	log.Printf("connecting to mongodb at: %v \n", url)
 
 	opts := options.Client()
 
@@ -25,7 +25,7 @@ func ConnectDb(ctx context.Context, cfg models.Config) (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "connect db: ")
+		return nil, errors.Wrap(err, "connect db")
 	}
 
 	for {
@@ -35,7 +35,7 @@ func ConnectDb(ctx context.Context, cfg models.Config) (*mongo.Client, error) {
 		default:
 			err := client.Ping(ctx, readpref.Primary())
 			if err == nil {
-				log.Info("mongo is now connected")
+				log.Print("mongo is now connected")
 				return client, nil
 			}
 		}
