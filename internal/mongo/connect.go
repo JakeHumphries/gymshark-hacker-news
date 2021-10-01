@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
@@ -15,13 +16,13 @@ import (
 // ConnectDb tests the connection to mongo and returns a mongo client
 func ConnectDb(ctx context.Context, cfg models.Config) (*mongo.Client, error) {
 
-	url := fmt.Sprintf("mongodb://%s:%s@%s:%s", cfg.DatabaseUser, cfg.DatabasePassword, cfg.DatabaseName, cfg.DatabasePort)
+	mongoUrl := fmt.Sprintf("mongodb://%s:%s@%s:%s", url.QueryEscape(cfg.DatabaseUser), url.QueryEscape(cfg.DatabasePassword), url.QueryEscape(cfg.DatabaseName), cfg.DatabasePort)
 
-	log.Printf("connecting to mongodb at: %v \n", url)
+	log.Printf("connecting to mongodb at: %v \n", mongoUrl)
 
 	opts := options.Client()
 
-	opts.ApplyURI(url)
+	opts.ApplyURI(mongoUrl)
 
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
