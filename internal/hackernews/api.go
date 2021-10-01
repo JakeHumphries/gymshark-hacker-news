@@ -13,11 +13,11 @@ import (
 // Api to get data from the hacker news api
 type Api struct{}
 
-const hackerNewsUrl string = "https://hacker-news.firebaseio.com/"
+const hackerNewsUrl string = "https://hacker-news.firebaseio.com"
 
 // GetTopStories gets the top stories from the hacker news api
 func (a Api) GetTopStories() ([]int, error) {
-	url := fmt.Sprintf("%sv0/topstories.json?print=pretty", hackerNewsUrl)
+	url := fmt.Sprintf("%s/v0/topstories.json", hackerNewsUrl)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "get top stories")
@@ -43,7 +43,7 @@ func (a Api) GetTopStories() ([]int, error) {
 
 // GetItem gets a specific item from the hacker news api based on an item id
 func (a Api) GetItem(id int) (*models.Item, error) {
-	url := fmt.Sprintf("%sv0/item/%d.json?print=pretty", hackerNewsUrl, id)
+	url := fmt.Sprintf("%s/v0/item/%d.json", hackerNewsUrl, id)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "get item")
