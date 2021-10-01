@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -24,43 +23,82 @@ type MockItemProvider struct {
 }
 
 func (m *MockItemProvider) GetTopStories() ([]int, error) {
-	return []int{1, 2, 3, 4, 5}, nil
+	return []int{1, 2, 3}, nil
 }
 
 func (m *MockItemProvider) GetItem(id int) (*models.Item, error) {
-	item := models.Item{
-		Deleted: false,
-		Dead:    false,
+	args := m.Called(id)
+
+	itemArg, ok := args.Get(0).(*models.Item)
+	if !ok {
+		return nil, nil
 	}
 
-	return &item, nil
+	return itemArg, args.Error(1)
 }
-
 func TestConsumer_Execute(t *testing.T) {
-	fmt.Println("hello world")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
 
-	fmt.Println(ctx)
+	tests := []struct {
+		name           string
+		itemRepository *MockItemRepository
+		itemProvider   *MockItemProvider
+		expected       func(t *testing.T, itemRepoMock *MockItemRepository, itemProviderMock *MockItemProvider)
+		assertions     func(itemRepoMock *MockItemRepository)
+	}{
+		{
+			name:           "calls saveItem for every item returned from provider",
+			itemRepository: &MockItemRepository{},
+			itemProvider:   &MockItemProvider{},
+			expected: func(t *testing.T, itemRepoMock *MockItemRepository, itemProviderMock *MockItemProvider) {
+				itemRepoMock.On("SaveItem").Return(nil)
+				itemProviderMock.On("GetItem", 1).Return(&models.Item{Id: 1}, nil)
+				itemProviderMock.On("GetItem", 2).Return(&models.Item{Id: 2}, nil)
+				itemProviderMock.On("GetItem", 3).Return(&models.Item{Id: 3}, nil)
 
-	cfg := models.Config{
-		DatabaseName:     "testName",
-		DatabaseUser:     "testUser",
-		DatabasePassword: "testPass",
-		DatabasePort:     "testPort",
-		Cron:             "0 30 * * * *",
-		WorkerCount:      10,
+			},
+			assertions: func(itemRepoMock *MockItemRepository) {
+				itemRepoMock.AssertNumberOfCalls(t, "SaveItem", 3)
+			},
+		},
+		{
+			name:           "doesnt call saveItem when item is set to deleted or dead",
+			itemRepository: &MockItemRepository{},
+			itemProvider:   &MockItemProvider{},
+			expected: func(t *testing.T, itemRepoMock *MockItemRepository, itemProviderMock *MockItemProvider) {
+				itemRepoMock.On("SaveItem").Return(nil)
+				itemProviderMock.On("GetItem", 1).Return(&models.Item{Id: 1, Dead: true}, nil)
+				itemProviderMock.On("GetItem", 2).Return(&models.Item{Id: 2, Deleted: true}, nil)
+				itemProviderMock.On("GetItem", 3).Return(&models.Item{Id: 3, Dead: true, Deleted: true}, nil)
+			},
+			assertions: func(itemRepoMock *MockItemRepository) {
+				itemRepoMock.AssertNumberOfCalls(t, "SaveItem", 0)
+			},
+		},
 	}
 
-	fmt.Println(cfg)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expected != nil {
+				tt.expected(t, tt.itemRepository, tt.itemProvider)
+			}
 
-	itemRepoMock := new(MockItemRepository)
-	itemProviderMock := new(MockItemProvider)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
 
-	itemRepoMock.On("SaveItem").Return(nil)
+			cfg := models.Config{
+				DatabaseName:     "testName",
+				DatabaseUser:     "testUser",
+				DatabasePassword: "testPass",
+				DatabasePort:     "testPort",
+				Cron:             "0 30 * * * *",
+				WorkerCount:      10,
+			}
 
-	Execute(ctx, cfg, itemRepoMock, itemProviderMock)
+			Execute(ctx, cfg, tt.itemRepository, tt.itemProvider)
 
-	itemRepoMock.AssertNumberOfCalls(t, "SaveItem", 5)
-	itemRepoMock.AssertExpectations(t)
+			if tt.assertions != nil {
+				tt.assertions(tt.itemRepository)
+			}
+		})
+	}
 }
