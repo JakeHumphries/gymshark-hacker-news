@@ -13,7 +13,9 @@ services:
     build:
       context: .
       dockerfile: docker/consumer/Dockerfile
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/api/Dockerfile
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    ports:
+      - 8000:8000

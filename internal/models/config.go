@@ -40,7 +40,7 @@ func GetConfig() (*Config, error) {
 
 	apiPort, exists := os.LookupEnv("API_PORT")
 	if !exists {
-		port = "8000"
+		apiPort = "8000"
 	}
 
 	config := Config{
