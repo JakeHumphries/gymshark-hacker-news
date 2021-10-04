@@ -18,6 +18,10 @@ func (m *MockItemRepository) SaveItem(ctx context.Context, item models.Item) (*m
 	return nil, nil
 }
 
+func (m *MockItemRepository) GetAllItems(ctx context.Context) {
+	m.Called()
+}
+
 type MockItemProvider struct {
 	mock.Mock
 }

@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
@@ -30,7 +31,22 @@ func (r Repository) SaveItem(ctx context.Context, item models.Item) (*models.Ite
 	if err != nil {
 		return nil, errors.Wrap(err, "save item: ")
 	}
-	log.Print("Inserted Record: %v \n", item.Id)
+	log.Printf("Inserted Record: %v", item.Id)
 
 	return &item, nil
+}
+
+// GetAllItems get all the items in the mongo database
+func (r Repository) GetAllItems(ctx context.Context) {
+	var items []models.Item
+	database := r.Client.Database("hacker-news")
+	itemsCollection := database.Collection("items")
+	cursor, err := itemsCollection.Find(ctx, bson.D{})
+	if err != nil {
+		panic(err)
+	}
+	if err = cursor.All(ctx, &items); err != nil {
+		panic(err)
+	}
+	fmt.Println(items)
 }
