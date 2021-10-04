@@ -12,6 +12,8 @@ type Config struct {
 	DatabasePort     string
 	Cron             string
 	WorkerCount      int
+	ApiHost          string
+	ApiPort          string
 }
 
 func GetConfig() (*Config, error) {
@@ -31,6 +33,15 @@ func GetConfig() (*Config, error) {
 	if !exists {
 		return nil, errors.New("err: env var database port doesnt exist")
 	}
+	host, exists := os.LookupEnv("API_HOST")
+	if !exists {
+		host = "0.0.0.0"
+	}
+
+	apiPort, exists := os.LookupEnv("API_PORT")
+	if !exists {
+		port = "8000"
+	}
 
 	config := Config{
 		DatabaseName:     name,
@@ -39,6 +50,8 @@ func GetConfig() (*Config, error) {
 		DatabasePort:     port,
 		Cron:             "0 30 * * * *",
 		WorkerCount:      10,
+		ApiHost:          host,
+		ApiPort:          apiPort,
 	}
 
 	return &config, nil

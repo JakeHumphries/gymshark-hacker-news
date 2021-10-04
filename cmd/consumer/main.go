@@ -18,7 +18,7 @@ func init() {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatalf("loading .env file: %s", err)
+		log.Fatalf("loading .env file %s", err)
 	}
 
 }
@@ -29,12 +29,12 @@ func main() {
 
 	cfg, err := models.GetConfig()
 	if err != nil {
-		log.Fatalf("loading config: %s", err)
+		log.Fatalf("loading config %s", err)
 	}
 
 	mongoClient, err := mongo.ConnectDb(ctx, *cfg)
 	if err != nil {
-		log.Fatalf("connecting to db: %s", err)
+		log.Fatalf("connecting to db %s", err)
 	}
 
 	c := cron.New()
