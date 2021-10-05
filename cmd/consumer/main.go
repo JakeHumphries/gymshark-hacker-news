@@ -32,15 +32,15 @@ func main() {
 		log.Fatalf("loading config %s", err)
 	}
 
-	mongoClient, err := mongo.ConnectDb(ctx, *cfg)
+	repo, err := mongo.NewRepository(ctx, *cfg)
 	if err != nil {
-		log.Fatalf("connecting to db %s", err)
+		log.Fatalf("creating mongo repository %s", err)
 	}
 
 	c := cron.New()
 
 	execute := func() {
-		consumer.Execute(ctx, *cfg, mongo.Repository{Client: mongoClient}, hackernews.Api{})
+		consumer.Execute(ctx, *cfg, repo.Writer, hackernews.Api{})
 	}
 
 	execute()

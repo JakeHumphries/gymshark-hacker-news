@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -14,6 +15,8 @@ type Config struct {
 	WorkerCount      int
 	ApiHost          string
 	ApiPort          string
+	RedisHost        string
+	CacheTimout      time.Duration
 }
 
 func GetConfig() (*Config, error) {
@@ -52,6 +55,8 @@ func GetConfig() (*Config, error) {
 		WorkerCount:      10,
 		ApiHost:          host,
 		ApiPort:          apiPort,
+		RedisHost:        "localhost:6379",
+		CacheTimout:      5 * time.Minute,
 	}
 
 	return &config, nil

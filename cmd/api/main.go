@@ -33,10 +33,12 @@ func main() {
 		log.Fatalf("loading config: %s", err)
 	}
 
-	mongoClient, err := mongo.ConnectDb(ctx, *cfg)
+	repo, err := mongo.NewRepository(ctx, *cfg)
 	if err != nil {
-		log.Fatalf("connecting to db %s", err)
+		log.Fatalf("creating mongo repository %s", err)
 	}
+
+	cacheReader := api.NewCacheReader(repo.Reader, *cfg)
 
 	router := echo.New()
 	router.HideBanner = true
@@ -45,7 +47,7 @@ func main() {
 		return c.JSON(http.StatusOK, "ok")
 	})
 
-	a := api.New(mongo.Repository{Client: mongoClient})
+	a := api.New(cacheReader, ctx)
 
 	router.GET("/all", a.GetAll)
 
