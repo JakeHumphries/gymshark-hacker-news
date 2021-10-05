@@ -15,14 +15,13 @@ type ItemProvider interface {
 	GetItem(id int) (*models.Item, error)
 }
 
-// ItemRepository is an interface for saving items to persistance
-type ItemRepository interface {
+// ItemWriter is an interface for saving items
+type ItemWriter interface {
 	SaveItem(ctx context.Context, item models.Item) (*models.Item, error)
-	GetAllItems(ctx context.Context) ([]models.Item, error)
 }
 
 // Execute is the entry point for consumer service
-func Execute(ctx context.Context, cfg models.Config, itemRepository ItemRepository, itemProvider ItemProvider) {
+func Execute(ctx context.Context, cfg models.Config, itemWriter ItemWriter, itemProvider ItemProvider) {
 	ids, err := itemProvider.GetTopStories()
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "execute"))
@@ -32,7 +31,7 @@ func Execute(ctx context.Context, cfg models.Config, itemRepository ItemReposito
 
 	var wg sync.WaitGroup
 
-	w := NewWorker(itemProvider, itemRepository)
+	w := NewWorker(itemProvider, itemWriter)
 
 	for i := 0; i < cfg.WorkerCount; i++ {
 		wg.Add(1)

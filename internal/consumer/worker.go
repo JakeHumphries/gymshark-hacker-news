@@ -10,14 +10,14 @@ import (
 // Worker is responsible for doing the work to save items
 type Worker struct {
 	itemProvider   ItemProvider
-	itemRepository ItemRepository
+	itemWriter ItemWriter
 }
 
 // NewWorker creates a new worker
-func NewWorker(itemProvider ItemProvider, itemRepository ItemRepository) *Worker {
+func NewWorker(itemProvider ItemProvider, itemWriter ItemWriter) *Worker {
 	return &Worker{
 		itemProvider:   itemProvider,
-		itemRepository: itemRepository,
+		itemWriter: itemWriter,
 	}
 }
 
@@ -27,7 +27,7 @@ func (w *Worker) run(ctx context.Context, idChan chan int) {
 		if err != nil {
 			log.Print(errors.Wrap(err, "worker"))
 		} else if !item.Dead && !item.Deleted {
-			_, err := w.itemRepository.SaveItem(ctx, *item)
+			_, err := w.itemWriter.SaveItem(ctx, *item)
 			if err != nil {
 				log.Print(errors.Wrap(err, "worker"))
 			}

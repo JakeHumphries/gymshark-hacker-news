@@ -13,12 +13,33 @@ import (
 
 // Repository is a struct that exposes the mongo client and context
 type Repository struct {
+	Reader Reader
+	Writer Writer
+}
+
+type Reader struct {
+	Client *mongo.Client
+}
+type Writer struct {
 	Client *mongo.Client
 }
 
+// NewRepository creates a new repository
+func NewRepository(ctx context.Context, cfg models.Config) (*Repository, error) {
+	mongoClient, err := ConnectDb(ctx, cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "connecting to db")
+	}
+
+	return &Repository{
+		Reader: Reader{Client: mongoClient},
+		Writer: Writer{Client: mongoClient},
+	}, nil
+}
+
 // SaveItem saves items to the mongo database
-func (r Repository) SaveItem(ctx context.Context, item models.Item) (*models.Item, error) {
-	database := r.Client.Database("hacker-news")
+func (w Writer) SaveItem(ctx context.Context, item models.Item) (*models.Item, error) {
+	database := w.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
 	opts := options.Update().SetUpsert(true)
@@ -36,7 +57,7 @@ func (r Repository) SaveItem(ctx context.Context, item models.Item) (*models.Ite
 }
 
 // GetAllItems get all the items in the mongo database
-func (r Repository) GetAllItems(ctx context.Context) ([]models.Item, error) {
+func (r Reader) GetAllItems(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
