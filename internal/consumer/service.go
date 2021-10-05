@@ -18,7 +18,7 @@ type ItemProvider interface {
 // ItemRepository is an interface for saving items to persistance
 type ItemRepository interface {
 	SaveItem(ctx context.Context, item models.Item) (*models.Item, error)
-	GetAllItems(ctx context.Context)
+	GetAllItems(ctx context.Context) ([]models.Item, error)
 }
 
 // Execute is the entry point for consumer service
