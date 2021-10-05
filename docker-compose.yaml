@@ -9,6 +9,11 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
   consumer:
     build:
       context: .
