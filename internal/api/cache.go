@@ -18,12 +18,14 @@ type CacheReader struct {
 
 // NewCacheReader creates a new cache reader
 func NewCacheReader(itemReader ItemReader, cfg models.Config) *CacheReader {
-	client := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisHost,
-	})
+	ring := redis.NewRing(&redis.RingOptions{
+        Addrs: map[string]string{
+            "server1": cfg.RedisHost,
+        },
+    })
 
 	itemCache := cache.New(&cache.Options{
-		Redis: client,
+		Redis: ring,
 	})
 
 	return &CacheReader{
