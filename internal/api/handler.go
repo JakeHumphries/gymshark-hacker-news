@@ -18,7 +18,6 @@ type ItemReader interface {
 type Handler struct {
 	itemReader ItemReader
 	ctx context.Context
-	cfg models.Config
 }
 
 // New returns a new api handler
