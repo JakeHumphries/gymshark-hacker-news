@@ -36,9 +36,15 @@ func GetConfig() (*Config, error) {
 	if !exists {
 		return nil, errors.New("err: env var database port doesnt exist")
 	}
-	host, exists := os.LookupEnv("API_HOST")
+
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
 	if !exists {
-		host = "0.0.0.0"
+		return nil, errors.New("err: env var redis host doesnt exist")
+	}
+
+	apiHost, exists := os.LookupEnv("API_HOST")
+	if !exists {
+		apiHost = "0.0.0.0"
 	}
 
 	apiPort, exists := os.LookupEnv("API_PORT")
@@ -53,9 +59,9 @@ func GetConfig() (*Config, error) {
 		DatabasePort:     port,
 		Cron:             "0 30 * * * *",
 		WorkerCount:      10,
-		ApiHost:          host,
+		ApiHost:          apiHost,
 		ApiPort:          apiPort,
-		RedisHost:        "localhost:6379",
+		RedisHost:        redisHost,
 		CacheTimout:      5 * time.Minute,
 	}
 
