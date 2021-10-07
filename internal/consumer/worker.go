@@ -9,15 +9,15 @@ import (
 
 // Worker is responsible for doing the work to save items
 type Worker struct {
-	itemProvider   ItemProvider
-	itemWriter ItemWriter
+	itemProvider ItemProvider
+	itemWriter   ItemWriter
 }
 
 // NewWorker creates a new worker
 func NewWorker(itemProvider ItemProvider, itemWriter ItemWriter) *Worker {
 	return &Worker{
-		itemProvider:   itemProvider,
-		itemWriter: itemWriter,
+		itemProvider: itemProvider,
+		itemWriter:   itemWriter,
 	}
 }
 
