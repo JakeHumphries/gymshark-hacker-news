@@ -49,7 +49,7 @@ func (w Writer) SaveItem(ctx context.Context, item models.Item) (*models.Item, e
 	}
 	_, err := itemsCollection.UpdateOne(ctx, bson.M{"id": item.Id}, update, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "save item")
+		return nil, errors.Wrap(err, "repository: save item")
 	}
 	log.Printf("Inserted Record: %v", item.Id)
 
@@ -61,12 +61,42 @@ func (r Reader) GetAllItems(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
-	cursor, err := itemsCollection.Find(ctx, bson.D{})
+	cursor, err := itemsCollection.Find(ctx, bson.M{})
 	if err != nil {
-		return nil, errors.Wrap(err, "get all items")
+		return nil, errors.Wrap(err, "repository: get all items")
 	}
 	if err = cursor.All(ctx, &items); err != nil {
-		return nil, errors.Wrap(err, "get all items")
+		return nil, errors.Wrap(err, "repository: get all items")
+	}
+	return items, nil
+}
+
+// GetStories get all the items in the mongo database with the type of story
+func (r Reader) GetStories(ctx context.Context) ([]models.Item, error) {
+	var items []models.Item
+	database := r.Client.Database("hacker-news")
+	itemsCollection := database.Collection("items")
+	cursor, err := itemsCollection.Find(ctx, bson.M{"itemType": "story"})
+	if err != nil {
+		return nil, errors.Wrap(err, "repository: get stories")
+	}
+	if err = cursor.All(ctx, &items); err != nil {
+		return nil, errors.Wrap(err, "repository: get stories")
+	}
+	return items, nil
+}
+
+// GetJobs get all the items in the mongo database with the type of job
+func (r Reader) GetJobs(ctx context.Context) ([]models.Item, error) {
+	var items []models.Item
+	database := r.Client.Database("hacker-news")
+	itemsCollection := database.Collection("items")
+	cursor, err := itemsCollection.Find(ctx, bson.M{"itemType": "job"})
+	if err != nil {
+		return nil, errors.Wrap(err, "repository: get jobs")
+	}
+	if err = cursor.All(ctx, &items); err != nil {
+		return nil, errors.Wrap(err, "repository: get jobs")
 	}
 	return items, nil
 }

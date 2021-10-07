@@ -43,13 +43,17 @@ func main() {
 	router := echo.New()
 	router.HideBanner = true
 
+	a := api.New(cacheReader, ctx)
+
+	router.GET("/all", a.GetAllItems)
+
+	router.GET("/stories", a.GetStories)
+
+	router.GET("/jobs", a.GetJobs)
+
 	router.GET("/_healthz", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "ok")
 	})
-
-	a := api.New(cacheReader, ctx)
-
-	router.GET("/all", a.GetAll)
 
 	addr := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
 	if err := router.Start(addr); err != nil {

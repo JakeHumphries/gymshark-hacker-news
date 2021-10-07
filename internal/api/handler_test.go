@@ -33,6 +33,32 @@ func (m *MockReader) GetAllItems(ctx context.Context) ([]models.Item, error) {
 	return items, args.Error(1)
 }
 
+func (m *MockReader) GetStories(ctx context.Context) ([]models.Item, error) {
+	args := m.Called()
+
+	itemArg, ok := args.Get(0).(*models.Item)
+	if !ok {
+		return nil, args.Error(0)
+	}
+
+	items := []models.Item{*itemArg}
+
+	return items, args.Error(1)
+}
+
+func (m *MockReader) GetJobs(ctx context.Context) ([]models.Item, error) {
+	args := m.Called()
+
+	itemArg, ok := args.Get(0).(*models.Item)
+	if !ok {
+		return nil, args.Error(0)
+	}
+
+	items := []models.Item{*itemArg}
+
+	return items, args.Error(1)
+}
+
 func TestConsumer_GetAll(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -86,7 +112,171 @@ func TestConsumer_GetAll(t *testing.T) {
 			c.SetPath("/all")
 
 			a := New(tt.mockReader, ctx)
-			a.GetAll(c)
+			a.GetAllItems(c)
+
+			if tt.assertions != nil {
+				tt.assertions(tt.mockReader)
+			}
+
+			assert.Equal(t, tt.code, rec.Code)
+
+			if tt.code == http.StatusOK {
+				responseData, err := ioutil.ReadAll(rec.Body)
+				if err != nil {
+					t.Fail()
+					t.Logf("failed reading response body: %d", err)
+				}
+
+				var items []models.Item
+				err = json.Unmarshal(responseData, &items)
+				if err != nil {
+					t.Fail()
+					t.Logf("failed unmarshalling response body: %d", err)
+				}
+
+				assert.Equal(t, tt.result, items)
+			}
+
+		})
+	}
+}
+
+func TestConsumer_GetStories(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	tests := []struct {
+		name       string
+		mockReader *MockReader
+		code       int
+		result     []models.Item
+		expected   func(t *testing.T, mockReader *MockReader)
+		assertions func(mockReader *MockReader)
+	}{
+		{
+			name:       "returns correct status and response on successful request",
+			mockReader: &MockReader{},
+			code:       http.StatusOK,
+			result:     []models.Item{{Id: 1, ItemType: "story"}},
+			expected: func(t *testing.T, mockReader *MockReader) {
+				mockReader.On("GetStories").Return(&models.Item{Id: 1, ItemType: "story"}, nil)
+
+			},
+			assertions: func(mockReader *MockReader) {
+				mockReader.AssertNumberOfCalls(t, "GetStories", 1)
+			},
+		},
+		{
+			name:       "returns correct status and response on failed request",
+			mockReader: &MockReader{},
+			code:       http.StatusInternalServerError,
+			result:     nil,
+			expected: func(t *testing.T, mockReader *MockReader) {
+				mockReader.On("GetStories").Return(errors.New("test fail"))
+
+			},
+			assertions: func(mockReader *MockReader) {
+				mockReader.AssertNumberOfCalls(t, "GetStories", 1)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expected != nil {
+				tt.expected(t, tt.mockReader)
+			}
+
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetPath("/stories")
+
+			a := New(tt.mockReader, ctx)
+			a.GetStories(c)
+
+			if tt.assertions != nil {
+				tt.assertions(tt.mockReader)
+			}
+
+			assert.Equal(t, tt.code, rec.Code)
+
+			if tt.code == http.StatusOK {
+				responseData, err := ioutil.ReadAll(rec.Body)
+				if err != nil {
+					t.Fail()
+					t.Logf("failed reading response body: %d", err)
+				}
+
+				var items []models.Item
+				err = json.Unmarshal(responseData, &items)
+				if err != nil {
+					t.Fail()
+					t.Logf("failed unmarshalling response body: %d", err)
+				}
+
+				assert.Equal(t, tt.result, items)
+			}
+
+		})
+	}
+}
+
+func TestConsumer_GetJobs(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	tests := []struct {
+		name       string
+		mockReader *MockReader
+		code       int
+		result     []models.Item
+		expected   func(t *testing.T, mockReader *MockReader)
+		assertions func(mockReader *MockReader)
+	}{
+		{
+			name:       "returns correct status and response on successful request",
+			mockReader: &MockReader{},
+			code:       http.StatusOK,
+			result:     []models.Item{{Id: 1, ItemType: "job"}},
+			expected: func(t *testing.T, mockReader *MockReader) {
+				mockReader.On("GetJobs").Return(&models.Item{Id: 1, ItemType: "job"}, nil)
+
+			},
+			assertions: func(mockReader *MockReader) {
+				mockReader.AssertNumberOfCalls(t, "GetJobs", 1)
+			},
+		},
+		{
+			name:       "returns correct status and response on failed request",
+			mockReader: &MockReader{},
+			code:       http.StatusInternalServerError,
+			result:     nil,
+			expected: func(t *testing.T, mockReader *MockReader) {
+				mockReader.On("GetJobs").Return(errors.New("test fail"))
+
+			},
+			assertions: func(mockReader *MockReader) {
+				mockReader.AssertNumberOfCalls(t, "GetJobs", 1)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expected != nil {
+				tt.expected(t, tt.mockReader)
+			}
+
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+			c.SetPath("/jobs")
+
+			a := New(tt.mockReader, ctx)
+			a.GetJobs(c)
 
 			if tt.assertions != nil {
 				tt.assertions(tt.mockReader)
