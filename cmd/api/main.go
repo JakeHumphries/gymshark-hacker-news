@@ -37,7 +37,7 @@ func main() {
 		log.Fatalf("creating mongo repository %s", err)
 	}
 
-	cacheReader := api.NewCacheReader(repo.Reader, *cfg)
+	cacheReader := api.NewCacheReader(repo, *cfg)
 
 	router := echo.New()
 	router.HideBanner = true

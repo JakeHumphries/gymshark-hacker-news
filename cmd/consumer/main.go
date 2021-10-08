@@ -40,7 +40,7 @@ func main() {
 	c := cron.New()
 
 	execute := func() {
-		consumer.Execute(ctx, *cfg, repo.Writer, hackernews.Api{})
+		consumer.Execute(ctx, *cfg, repo, hackernews.Api{})
 	}
 
 	execute()

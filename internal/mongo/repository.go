@@ -13,14 +13,6 @@ import (
 
 // Repository is a struct that exposes the mongo client and context
 type Repository struct {
-	Reader Reader
-	Writer Writer
-}
-
-type Reader struct {
-	Client *mongo.Client
-}
-type Writer struct {
 	Client *mongo.Client
 }
 
@@ -32,13 +24,12 @@ func NewRepository(ctx context.Context, cfg models.Config) (*Repository, error) 
 	}
 
 	return &Repository{
-		Reader: Reader{Client: mongoClient},
-		Writer: Writer{Client: mongoClient},
+		Client: mongoClient,
 	}, nil
 }
 
 // SaveItem saves items to the mongo database
-func (w Writer) SaveItem(ctx context.Context, item models.Item) (*models.Item, error) {
+func (w Repository) SaveItem(ctx context.Context, item models.Item) (*models.Item, error) {
 	database := w.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
 
@@ -57,7 +48,7 @@ func (w Writer) SaveItem(ctx context.Context, item models.Item) (*models.Item, e
 }
 
 // GetAllItems get all the items in the mongo database
-func (r Reader) GetAllItems(ctx context.Context) ([]models.Item, error) {
+func (r Repository) GetAllItems(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
@@ -72,7 +63,7 @@ func (r Reader) GetAllItems(ctx context.Context) ([]models.Item, error) {
 }
 
 // GetStories get all the items in the mongo database with the type of story
-func (r Reader) GetStories(ctx context.Context) ([]models.Item, error) {
+func (r Repository) GetStories(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
@@ -87,7 +78,7 @@ func (r Reader) GetStories(ctx context.Context) ([]models.Item, error) {
 }
 
 // GetJobs get all the items in the mongo database with the type of job
-func (r Reader) GetJobs(ctx context.Context) ([]models.Item, error) {
+func (r Repository) GetJobs(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
