@@ -36,7 +36,7 @@ Endpoint `/all`
 This accepts GET requests. Here is an example development request:
 
 ```bash
-curl -X POST 'http://0.0.0.0:8000/all' \
+curl 'http://0.0.0.0:8000/all' \
   -H 'Content-Type: application/json' -v
 ```
 
@@ -100,7 +100,7 @@ Endpoint `/stories`
 This accepts GET requests. Here is an example development request:
 
 ```bash
-curl -X POST 'http://0.0.0.0:8000/stories' \
+curl 'http://0.0.0.0:8000/stories' \
   -H 'Content-Type: application/json' -v
 ```
 
@@ -147,7 +147,7 @@ Endpoint `/jobs`
 This accepts GET requests. Here is an example development request:
 
 ```bash
-curl -X POST 'http://0.0.0.0:8000/jobs' \
+curl 'http://0.0.0.0:8000/jobs' \
   -H 'Content-Type: application/json' -v
 ```
 
@@ -177,7 +177,7 @@ Example response:
 
 ## Environment Variables
 
-There are a number of environment variables that are required.
+There are a number of environment variables that are required within the .env file in the root dir. 
 
 To specify where the application runs:
 
