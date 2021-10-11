@@ -33,7 +33,7 @@ func New(itemReader ItemReader, ctx context.Context) *Handler {
 func (h *Handler) GetAllItems(c echo.Context) (err error) {
 	i, err := h.itemReader.GetAllItems(c.Request().Context())
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("handler: %s", err))
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("handler: %s", err))
 	}
 
 	return c.JSON(http.StatusOK, i)
@@ -53,7 +53,6 @@ func (h *Handler) GetStories(c echo.Context) (err error) {
 func (h *Handler) GetJobs(c echo.Context) (err error) {
 	i, err := h.itemReader.GetJobs(c.Request().Context())
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Please provide valid credentials")
 		return c.JSON(http.StatusInternalServerError, errors.Wrap(err, "handler"))
 	}
 
