@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
-	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
-	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/api"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
 	"github.com/joho/godotenv"
-	"github.com/robfig/cron/v3"
+	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,7 +21,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("loading .env file %s", err)
 	}
-
 }
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 
 	cfg, err := models.GetConfig()
 	if err != nil {
-		log.Fatalf("loading config %s", err)
+		log.Fatalf("loading config: %s", err)
 	}
 
 	repo, err := mongo.NewRepository(ctx, *cfg)
@@ -37,15 +37,25 @@ func main() {
 		log.Fatalf("creating mongo repository %s", err)
 	}
 
-	c := cron.New()
+	cacheReader := api.NewCacheReader(repo, *cfg)
 
-	execute := func() {
-		consumer.Execute(ctx, *cfg, repo, hackernews.Api{})
+	router := echo.New()
+	router.HideBanner = true
+
+	a := api.New(cacheReader, ctx)
+
+	router.GET("/all", a.GetAllItems)
+
+	router.GET("/stories", a.GetStories)
+
+	router.GET("/jobs", a.GetJobs)
+
+	router.GET("/_healthz", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "ok")
+	})
+
+	addr := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
+	if err := router.Start(addr); err != nil {
+		log.Fatalf("starting server %s", err)
 	}
-
-	execute()
-
-	c.AddFunc(cfg.Cron, execute)
-
-	c.Run()
 }

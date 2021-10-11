@@ -9,7 +9,18 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379
   consumer:
     build:
       context: .
       dockerfile: docker/consumer/Dockerfile
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    ports:
+      - 8000:8000

@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -12,6 +13,10 @@ type Config struct {
 	DatabasePort     string
 	Cron             string
 	WorkerCount      int
+	ApiHost          string
+	ApiPort          string
+	RedisHost        string
+	CacheTimout      time.Duration
 }
 
 func GetConfig() (*Config, error) {
@@ -32,6 +37,21 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New("err: env var database port doesnt exist")
 	}
 
+	redisHost, exists := os.LookupEnv("REDIS_HOST")
+	if !exists {
+		return nil, errors.New("err: env var redis host doesnt exist")
+	}
+
+	apiHost, exists := os.LookupEnv("API_HOST")
+	if !exists {
+		apiHost = "0.0.0.0"
+	}
+
+	apiPort, exists := os.LookupEnv("API_PORT")
+	if !exists {
+		apiPort = "8000"
+	}
+
 	config := Config{
 		DatabaseName:     name,
 		DatabaseUser:     user,
@@ -39,6 +59,10 @@ func GetConfig() (*Config, error) {
 		DatabasePort:     port,
 		Cron:             "0 30 * * * *",
 		WorkerCount:      10,
+		ApiHost:          apiHost,
+		ApiPort:          apiPort,
+		RedisHost:        redisHost,
+		CacheTimout:      5 * time.Minute,
 	}
 
 	return &config, nil
