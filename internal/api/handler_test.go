@@ -164,9 +164,9 @@ func TestConsumer_GetStories(t *testing.T) {
 			name:       "returns correct status and response on successful request",
 			mockReader: &MockReader{},
 			code:       http.StatusOK,
-			result:     []models.Item{{Id: 1, ItemType: "story"}},
+			result:     []models.Item{{Id: 1, Type: "story"}},
 			expected: func(t *testing.T, mockReader *MockReader) {
-				mockReader.On("GetStories").Return([]models.Item{{Id: 1, ItemType: "story"}}, nil)
+				mockReader.On("GetStories").Return([]models.Item{{Id: 1, Type: "story"}}, nil)
 
 			},
 			assertions: func(mockReader *MockReader) {
@@ -231,9 +231,9 @@ func TestConsumer_GetJobs(t *testing.T) {
 			name:       "returns correct status and response on successful request",
 			mockReader: &MockReader{},
 			code:       http.StatusOK,
-			result:     []models.Item{{Id: 1, ItemType: "job"}},
+			result:     []models.Item{{Id: 1, Type: "job"}},
 			expected: func(t *testing.T, mockReader *MockReader) {
-				mockReader.On("GetJobs").Return([]models.Item{{Id: 1, ItemType: "job"}}, nil)
+				mockReader.On("GetJobs").Return([]models.Item{{Id: 1, Type: "job"}}, nil)
 
 			},
 			assertions: func(mockReader *MockReader) {
