@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/JakeHumphries/gymshark-hacker-news/protobufs";
+
+package protobufs;
+
+import "google/protobuf/empty.proto";
+
+service HackerNews {
+  rpc All(google.protobuf.Empty) returns (stream Item);
+  rpc Stories(google.protobuf.Empty) returns (stream Item);
+  rpc Jobs(google.protobuf.Empty) returns (stream Item);
+}
+
+message Item {
+  string by = 1;
+  string title = 2;
+  string url = 3;
+  string text = 4;
+  string type = 5;
+  int32 descendants = 6;
+  int32 id = 7;
+  int32 score = 8;
+  int32 time = 9;
+  int32 poll = 10;
+  repeated int32 kids = 11;
+  repeated int32 parts = 12; 
+  bool deleted = 13;
+  bool dead = 14;
+}
