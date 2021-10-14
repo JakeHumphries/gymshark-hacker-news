@@ -67,7 +67,7 @@ func (r Repository) GetStories(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
-	cursor, err := itemsCollection.Find(ctx, bson.M{"itemType": "story"})
+	cursor, err := itemsCollection.Find(ctx, bson.M{"type": "story"})
 	if err != nil {
 		return nil, errors.Wrap(err, "repository: get stories")
 	}
@@ -82,7 +82,7 @@ func (r Repository) GetJobs(ctx context.Context) ([]models.Item, error) {
 	var items []models.Item
 	database := r.Client.Database("hacker-news")
 	itemsCollection := database.Collection("items")
-	cursor, err := itemsCollection.Find(ctx, bson.M{"itemType": "job"})
+	cursor, err := itemsCollection.Find(ctx, bson.M{"type": "job"})
 	if err != nil {
 		return nil, errors.Wrap(err, "repository: get jobs")
 	}
