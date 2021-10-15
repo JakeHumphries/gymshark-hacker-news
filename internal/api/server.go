@@ -19,13 +19,15 @@ func (s Server) Run(cfg *models.Config) {
 	router := echo.New()
 	router.HideBanner = true
 
-	a := New(s.Client)
+	h := NewHandler(s.Client)
 
-	router.GET("/all", a.GetAllItems)
+	r := NewRouter(h)
 
-	router.GET("/stories", a.GetStories)
+	router.GET("/all", r.All)
 
-	router.GET("/jobs", a.GetJobs)
+	router.GET("/stories", r.Stories)
+
+	router.GET("/jobs", r.Jobs)
 
 	router.GET("/_healthz", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "ok")
