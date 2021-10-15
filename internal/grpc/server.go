@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/grpc/protobufs"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"google.golang.org/grpc"
 )
 
@@ -13,11 +14,8 @@ type Server struct {
 	Handler protobufs.HackerNewsServer
 }
 
-func (s Server) Run() {
-
-	fmt.Println("Go gRPC Beginners Tutorial!")
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
+func (s Server) Run(cfg *models.Config) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GrpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

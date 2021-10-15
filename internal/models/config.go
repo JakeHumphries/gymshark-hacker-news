@@ -17,6 +17,8 @@ type Config struct {
 	ApiPort          string
 	RedisHost        string
 	CacheTimout      time.Duration
+	GrpcPort         string
+	GrpcHost         string
 }
 
 func GetConfig() (*Config, error) {
@@ -52,6 +54,16 @@ func GetConfig() (*Config, error) {
 		apiPort = "8000"
 	}
 
+	grpcPort, exists := os.LookupEnv("GRPC_PORT")
+	if !exists {
+		grpcPort = "9000"
+	}
+
+	grpcHost, exists := os.LookupEnv("GRPC_HOST")
+	if !exists {
+		return nil, errors.New("err: env var grpc host doesnt exist")
+	}
+
 	config := Config{
 		DatabaseName:     name,
 		DatabaseUser:     user,
@@ -63,6 +75,8 @@ func GetConfig() (*Config, error) {
 		ApiPort:          apiPort,
 		RedisHost:        redisHost,
 		CacheTimout:      5 * time.Minute,
+		GrpcPort:         grpcPort,
+		GrpcHost:         grpcHost,
 	}
 
 	return &config, nil
