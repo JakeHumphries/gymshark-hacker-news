@@ -3,10 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/JakeHumphries/gymshark-hacker-news/internal/api"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/grpc"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
-	"github.com/JakeHumphries/gymshark-hacker-news/internal/grpc"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -36,7 +35,7 @@ func main() {
 		log.Fatalf("creating mongo repository %s", err)
 	}
 
-	cacheReader := api.NewCacheReader(repo, *cfg)
+	cacheReader := grpc.NewCacheReader(repo, *cfg)
 
 	router := echo.New()
 	router.HideBanner = true
@@ -45,5 +44,5 @@ func main() {
 
 	s := grpc.Server{h}
 
-	s.Run()
+	s.Run(cfg)
 }
