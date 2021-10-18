@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/api"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/grpc/protobufs"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
-	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 func init() {
@@ -24,38 +24,24 @@ func init() {
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	cfg, err := models.GetConfig()
 	if err != nil {
 		log.Fatalf("loading config: %s", err)
 	}
 
-	repo, err := mongo.NewRepository(ctx, *cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%s", cfg.GrpcHost, cfg.GrpcPort), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("creating mongo repository %s", err)
+		log.Fatalf("connecting to grpc server %s", err)
 	}
+	defer conn.Close()
 
-	cacheReader := api.NewCacheReader(repo, *cfg)
+	c := protobufs.NewHackerNewsClient(conn)
 
-	router := echo.New()
-	router.HideBanner = true
+	s := api.Server{Client: c}
 
-	a := api.New(cacheReader, ctx)
+	s.Run(cfg)
 
-	router.GET("/all", a.GetAllItems)
-
-	router.GET("/stories", a.GetStories)
-
-	router.GET("/jobs", a.GetJobs)
-
-	router.GET("/_healthz", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "ok")
-	})
-
-	addr := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
-	if err := router.Start(addr); err != nil {
-		log.Fatalf("starting server %s", err)
-	}
 }
