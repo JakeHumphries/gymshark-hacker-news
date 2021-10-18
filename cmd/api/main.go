@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/api"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/grpc/protobufs"
@@ -27,7 +29,10 @@ func main() {
 		log.Fatalf("loading config: %s", err)
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.GrpcHost, cfg.GrpcPort), grpc.WithInsecure())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%s", cfg.GrpcHost, cfg.GrpcPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("connecting to grpc server %s", err)
 	}
