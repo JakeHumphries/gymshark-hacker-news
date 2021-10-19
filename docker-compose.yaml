@@ -14,10 +14,23 @@ services:
     container_name: cache
     expose:
       - 6379
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+        - "5672:5672"
+        - "15672:15672"
+  publisher:
+    build:
+      context: .
+      dockerfile: docker/publisher/Dockerfile
+    depends_on:
+      - "rabbitmq"
   consumer:
     build:
       context: .
       dockerfile: docker/consumer/Dockerfile
+    depends_on:
+      - "rabbitmq"
   api:
     build:
       context: .
