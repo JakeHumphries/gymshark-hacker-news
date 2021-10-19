@@ -10,8 +10,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// ItemReader is an interface for getting items
-type ItemReader interface {
+// Reader is an interface for getting items
+type Reader interface {
 	GetAllItems(ctx context.Context) ([]models.Item, error)
 	GetStories(ctx context.Context) ([]models.Item, error)
 	GetJobs(ctx context.Context) ([]models.Item, error)
@@ -20,19 +20,19 @@ type ItemReader interface {
 // Handler contains all the business logic for handling requests
 type Handler struct {
 	protobufs.UnimplementedHackerNewsServer
-	itemReader ItemReader
+	reader Reader
 }
 
 // New returns a new api handler
-func New(itemReader ItemReader, ctx context.Context) *Handler {
+func New(reader Reader, ctx context.Context) *Handler {
 	return &Handler{
-		itemReader: itemReader,
+		reader: reader,
 	}
 }
 
 // All gets all the items in the item repository
 func (h *Handler) All(e *emptypb.Empty, s protobufs.HackerNews_AllServer) error {
-	items, err := h.itemReader.GetAllItems(s.Context())
+	items, err := h.reader.GetAllItems(s.Context())
 	if err != nil {
 		return fmt.Errorf("getAllItems: %w", err)
 	}
@@ -46,7 +46,7 @@ func (h *Handler) All(e *emptypb.Empty, s protobufs.HackerNews_AllServer) error 
 
 // Stories gets all the items in the item repository with the type of story
 func (h *Handler) Stories(e *emptypb.Empty, s protobufs.HackerNews_StoriesServer) error {
-	items, err := h.itemReader.GetStories(s.Context())
+	items, err := h.reader.GetStories(s.Context())
 	if err != nil {
 		return fmt.Errorf("getStories: %w", err)
 	}
@@ -60,7 +60,7 @@ func (h *Handler) Stories(e *emptypb.Empty, s protobufs.HackerNews_StoriesServer
 
 // Jobs gets all the items in the item repository with the type of job
 func (h *Handler) Jobs(e *emptypb.Empty, s protobufs.HackerNews_JobsServer) error {
-	items, err := h.itemReader.GetJobs(s.Context())
+	items, err := h.reader.GetJobs(s.Context())
 	if err != nil {
 		return fmt.Errorf("getJobs: %w", err)
 	}

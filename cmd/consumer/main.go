@@ -7,8 +7,8 @@ import (
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/mongo"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/queue"
 	"github.com/joho/godotenv"
-	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,15 +37,11 @@ func main() {
 		log.Fatalf("creating mongo repository %s", err)
 	}
 
-	c := cron.New()
-
-	execute := func() {
-		consumer.Execute(ctx, *cfg, repo, hackernews.Api{})
+	q, err := queue.New(ctx)
+	if err != nil {
+		log.Fatalf("creating rabbitmq queue %s", err)
 	}
+	defer q.Close()
 
-	execute()
-
-	c.AddFunc(cfg.Cron, execute)
-
-	c.Run()
+	consumer.Run(ctx, cfg, q, hackernews.Api{}, repo)
 }

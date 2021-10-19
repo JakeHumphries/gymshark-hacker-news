@@ -42,7 +42,7 @@ func main() {
 
 	h := grpc.New(cacheReader, ctx)
 
-	s := grpc.Server{h}
+	s := grpc.Server{Handler: h}
 
 	s.Run(cfg)
 }
