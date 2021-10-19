@@ -2,32 +2,38 @@ package consumer
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/publisher"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
 )
 
-// Worker is responsible for doing the work to save items
+// Writer is an interface for saving items
+type Writer interface {
+	SaveItem(ctx context.Context, item models.Item) (*models.Item, error)
+}
+
 type Worker struct {
-	itemProvider ItemProvider
-	itemWriter   ItemWriter
+	provider publisher.Provider
+	writer   Writer
+	idChan   <-chan amqp.Delivery
 }
 
-// NewWorker creates a new worker
-func NewWorker(itemProvider ItemProvider, itemWriter ItemWriter) *Worker {
-	return &Worker{
-		itemProvider: itemProvider,
-		itemWriter:   itemWriter,
-	}
-}
+func (w Worker) Run(ctx context.Context) {
+	for d := range w.idChan {
+		id, err := strconv.Atoi(string(d.Body))
+		if err != nil {
+			log.Print(errors.Wrap(err, "worker"))
+		}
 
-func (w *Worker) run(ctx context.Context, idChan chan int) {
-	for id := range idChan {
-		item, err := w.itemProvider.GetItem(id)
+		item, err := w.provider.GetItem(id)
 		if err != nil {
 			log.Print(errors.Wrap(err, "worker"))
 		} else if !item.Dead && !item.Deleted {
-			_, err := w.itemWriter.SaveItem(ctx, *item)
+			_, err := w.writer.SaveItem(ctx, *item)
 			if err != nil {
 				log.Print(errors.Wrap(err, "worker"))
 			}
