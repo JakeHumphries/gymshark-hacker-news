@@ -9,7 +9,7 @@ It is a monorepo that is comprised of the following services:
 - **API Service:** to forward requests to GRPC service 
 - **GRPC Service:** to read and return items from the database
 
-:warning: *Although this project has got some unit tests it is by no means fully tested* :warning:
+:warning: *Although this project has got some unit tests it is by no means fully tested*:warning:
 
 ## Running Locally
 
