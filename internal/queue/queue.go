@@ -3,8 +3,10 @@ package queue
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -58,11 +60,20 @@ func (q Queue) Publish(id int) error {
 		})
 }
 
-func (q Queue) Consume(ctx context.Context) (<-chan amqp.Delivery, error) {
+func (q Queue) Consume(idChan chan int) error {
 	msgs, err := q.ch.Consume("ItemQueue", "", true, false, false, false, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return msgs, nil
+	for msg := range msgs {
+		id, err := strconv.Atoi(string(msg.Body))
+		if err != nil {
+			log.Print(errors.Wrap(err, "worker"))
+		}
+
+		idChan <- id
+	}
+
+	return nil
 }

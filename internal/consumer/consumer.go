@@ -7,24 +7,21 @@ import (
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/publisher"
 	"github.com/pkg/errors"
-	"github.com/streadway/amqp"
 )
 
 // Consumer is an interface to for the consumption of the queue, returning a id channel
 type Consumer interface {
-	Consume(ctx context.Context) (<-chan amqp.Delivery, error)
+	Consume(idChan chan int) error
 }
 
 // Run handles the execution of the consumer, firing off workers concurrently
 func Run(ctx context.Context, cfg *models.Config, consumer Consumer, provider publisher.Provider, writer Writer) error {
-	idChan, err := consumer.Consume(ctx)
-	if err != nil {
-		return errors.Wrap(err, "consuming idChan ")
-	}
-
-	w := Worker{provider: provider, writer: writer, idChan: idChan}
 
 	var wg sync.WaitGroup
+
+	idChan := make(chan int)
+
+	w := Worker{provider: provider, writer: writer, idChan: idChan}
 
 	for i := 0; i < cfg.WorkerCount; i++ {
 		wg.Add(1)
@@ -35,6 +32,12 @@ func Run(ctx context.Context, cfg *models.Config, consumer Consumer, provider pu
 		}()
 
 	}
+
+	if err := consumer.Consume(idChan); err != nil {
+		return errors.Wrap(err, "consuming idChan ")
+	}
+
+	close(idChan)
 
 	wg.Wait()
 
