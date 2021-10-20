@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
@@ -17,8 +18,8 @@ type Queue struct {
 }
 
 // New creates a new rabbitMQ Queue
-func New(ctx context.Context) (*Queue, error) {
-	conn, err := connect(ctx)
+func New(ctx context.Context, cfg models.Config) (*Queue, error) {
+	conn, err := connect(ctx, cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to RabbitMQ ")
 	}

@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("loading config: %s", err)
 	}
 
-	q, err := queue.New(ctx)
+	q, err := queue.New(ctx, *cfg)
 	if err != nil {
 		log.Fatalf("creating rabbitmq queue: %s", err)
 	}

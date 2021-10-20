@@ -37,7 +37,7 @@ func main() {
 		log.Fatalf("creating mongo repository: %s", err)
 	}
 
-	q, err := queue.New(ctx)
+	q, err := queue.New(ctx, *cfg)
 	if err != nil {
 		log.Fatalf("creating rabbitmq queue: %s", err)
 	}

@@ -19,6 +19,9 @@ type Config struct {
 	CacheTimout      time.Duration
 	GrpcPort         string
 	GrpcHost         string
+	RabbitMqUser     string
+	RabbitMqPassword string
+	RabbitMqHost     string
 }
 
 func GetConfig() (*Config, error) {
@@ -64,6 +67,22 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New("err: env var grpc host doesnt exist")
 	}
 
+	rabbitMqUser, exists := os.LookupEnv("RABBIT_MQ_USER")
+	if !exists {
+		return nil, errors.New("err: env var rabbitMq user doesnt exist")
+	}
+
+	rabbitMqPassword, exists := os.LookupEnv("RABBIT_MQ_PASS")
+	if !exists {
+		return nil, errors.New("err: env var rabbitMq password doesnt exist")
+	}
+
+	rabbitMqHost, exists := os.LookupEnv("RABBIT_MQ_HOST")
+	if !exists {
+		return nil, errors.New("err: env var rabbitMq host doesnt exist")
+	}
+
+
 	config := Config{
 		DatabaseName:     name,
 		DatabaseUser:     user,
@@ -77,6 +96,9 @@ func GetConfig() (*Config, error) {
 		CacheTimout:      5 * time.Minute,
 		GrpcPort:         grpcPort,
 		GrpcHost:         grpcHost,
+		RabbitMqUser:     rabbitMqUser,
+		RabbitMqPassword: rabbitMqPassword,
+		RabbitMqHost:     rabbitMqHost,
 	}
 
 	return &config, nil
