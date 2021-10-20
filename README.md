@@ -2,13 +2,16 @@
 
 This is a project to help get up to speed with the WoW, stack and tooling the gymshark software team uses. It is a monorepo that is comprised of the following services:
 
-- Consumer Service to get and store information from the Hacker News API
-- API Service to consume and return data from the DB
-- GRPC Service
+- RabbitMQ Publisher Service to get information from the Hacker News API and publish messages to a queue.
+- RabbitMQ Consumer Service to spawn worker processes to read from the queue and save to a database.
+- API Service to forward requests to GRPC service 
+- GRPC Service to read and return items from the database
+
+:warning: Although this project has got some unit tests it is by no means fully tested :warning:
 
 ## Running Locally
 
-run `docker-compose up` to initialize all micro services, a mongo instance, and a redis instance
+run `docker-compose up` to initialize all micro services, a mongo instance, a redis instance, and a rabbitMQ instance
 
 ## API
 
