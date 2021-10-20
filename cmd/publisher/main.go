@@ -29,19 +29,21 @@ func main() {
 
 	cfg, err := models.GetConfig()
 	if err != nil {
-		log.Fatalf("loading config %s", err)
+		log.Fatalf("loading config: %s", err)
 	}
 
 	q, err := queue.New(ctx)
 	if err != nil {
-		log.Fatalf("creating rabbitmq queue %s", err)
+		log.Fatalf("creating rabbitmq queue: %s", err)
 	}
 	defer q.Close()
 
 	c := cron.New()
 
 	run := func() {
-		publisher.Run(q, hackernews.Api{})
+		if err := publisher.Run(q, hackernews.Api{}); err != nil {
+			log.Fatalf("running publisher: %s", err)
+		}
 	}
 
 	run()

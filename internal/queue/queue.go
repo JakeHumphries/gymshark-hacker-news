@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	// "github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
-	// "github.com/JakeHumphries/gymshark-hacker-news/internal/publisher"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 )
 
+// Queue holds the logic for interacting with a rabbitMQ queue
 type Queue struct {
 	ch   *amqp.Channel
 	conn *amqp.Connection

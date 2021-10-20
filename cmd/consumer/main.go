@@ -18,7 +18,7 @@ func init() {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatalf("loading .env file %s", err)
+		log.Fatalf("loading .env file: %s", err)
 	}
 
 }
@@ -29,19 +29,21 @@ func main() {
 
 	cfg, err := models.GetConfig()
 	if err != nil {
-		log.Fatalf("loading config %s", err)
+		log.Fatalf("loading config: %s", err)
 	}
 
 	repo, err := mongo.NewRepository(ctx, *cfg)
 	if err != nil {
-		log.Fatalf("creating mongo repository %s", err)
+		log.Fatalf("creating mongo repository: %s", err)
 	}
 
 	q, err := queue.New(ctx)
 	if err != nil {
-		log.Fatalf("creating rabbitmq queue %s", err)
+		log.Fatalf("creating rabbitmq queue: %s", err)
 	}
 	defer q.Close()
 
-	consumer.Run(ctx, cfg, q, hackernews.Api{}, repo)
+	if err := consumer.Run(ctx, cfg, q, hackernews.Api{}, repo); err != nil {
+		log.Fatalf("running consumer: %s", err)
+	}
 }

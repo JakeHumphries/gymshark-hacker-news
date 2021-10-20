@@ -17,7 +17,7 @@ func init() {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatalf("loading .env file %s", err)
+		log.Fatalf("loading .env file: %s", err)
 	}
 }
 
@@ -32,7 +32,7 @@ func main() {
 
 	repo, err := mongo.NewRepository(ctx, *cfg)
 	if err != nil {
-		log.Fatalf("creating mongo repository %s", err)
+		log.Fatalf("creating mongo repository: %s", err)
 	}
 
 	cacheReader := grpc.NewCacheReader(repo, *cfg)

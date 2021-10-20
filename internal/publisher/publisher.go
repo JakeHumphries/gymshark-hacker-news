@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Publisher is an interface for publishing item ids to a queue
 type Publisher interface {
 	Publish(id int) error
 }
@@ -19,7 +20,7 @@ type Provider interface {
 func Run(pub Publisher, prov Provider) error {
 	ids, err := prov.GetTopStories()
 	if err != nil {
-		log.Fatal(errors.Wrap(err, "execute"))
+		return errors.Wrap(err, "getting top stories from provider ")
 	}
 
 	for _, id := range ids {

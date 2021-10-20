@@ -16,6 +16,7 @@ type Writer interface {
 	SaveItem(ctx context.Context, item models.Item) (*models.Item, error)
 }
 
+// Worker holds the execution logic that gets and saves items
 type Worker struct {
 	provider publisher.Provider
 	writer   Writer
