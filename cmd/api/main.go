@@ -16,9 +16,7 @@ import (
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("loading .env file %s", err)
 	}
 }
@@ -34,7 +32,7 @@ func main() {
 
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%s", cfg.GrpcHost, cfg.GrpcPort), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("connecting to grpc server %s", err)
+		log.Fatalf("connecting to grpc server: %s", err)
 	}
 	defer conn.Close()
 

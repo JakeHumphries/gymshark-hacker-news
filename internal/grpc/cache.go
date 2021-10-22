@@ -11,13 +11,13 @@ import (
 
 // CacheReader calls an instance of redis to create and interact with a cache
 type CacheReader struct {
-	itemReader ItemReader
-	cache      *cache.Cache
-	cfg        models.Config
+	reader Reader
+	cache  *cache.Cache
+	cfg    models.Config
 }
 
 // NewCacheReader creates a new cache reader
-func NewCacheReader(itemReader ItemReader, cfg models.Config) *CacheReader {
+func NewCacheReader(reader Reader, cfg models.Config) *CacheReader {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
 			"server1": cfg.RedisHost,
@@ -29,8 +29,8 @@ func NewCacheReader(itemReader ItemReader, cfg models.Config) *CacheReader {
 	})
 
 	return &CacheReader{
-		itemReader: itemReader,
-		cache:      itemCache,
+		reader: reader,
+		cache:  itemCache,
 	}
 }
 
@@ -43,7 +43,7 @@ func (c CacheReader) GetAllItems(ctx context.Context) ([]models.Item, error) {
 		Value: &items,
 		TTL:   c.cfg.CacheTimout,
 		Do: func(*cache.Item) (interface{}, error) {
-			i, err := c.itemReader.GetAllItems(ctx)
+			i, err := c.reader.GetAllItems(ctx)
 			if err != nil {
 				return nil, errors.Wrap(err, "cache")
 			}
@@ -65,7 +65,7 @@ func (c CacheReader) GetStories(ctx context.Context) ([]models.Item, error) {
 		Value: &items,
 		TTL:   c.cfg.CacheTimout,
 		Do: func(*cache.Item) (interface{}, error) {
-			i, err := c.itemReader.GetStories(ctx)
+			i, err := c.reader.GetStories(ctx)
 			if err != nil {
 				return nil, errors.Wrap(err, "cache")
 			}
@@ -87,7 +87,7 @@ func (c CacheReader) GetJobs(ctx context.Context) ([]models.Item, error) {
 		Value: &items,
 		TTL:   c.cfg.CacheTimout,
 		Do: func(*cache.Item) (interface{}, error) {
-			i, err := c.itemReader.GetJobs(ctx)
+			i, err := c.reader.GetJobs(ctx)
 			if err != nil {
 				return nil, errors.Wrap(err, "cache")
 			}
