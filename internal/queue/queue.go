@@ -51,10 +51,10 @@ func (q Queue) Close() error {
 
 func (q Queue) Publish(id int) error {
 	return q.ch.Publish(
-		"",
-		"ItemQueue",
-		false,
-		false,
+		"", // exchange
+		"ItemQueue", // routing key
+		false, // mandatory
+		false, // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(fmt.Sprintf("%d", id)),
