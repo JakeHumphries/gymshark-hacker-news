@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/models"
@@ -15,16 +16,13 @@ import (
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("loading .env file %s", err)
 	}
-
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	cfg, err := models.GetConfig()
@@ -46,7 +44,7 @@ func main() {
 		}
 	}
 
-	run()
+	run() // run is called once here on execution to initially publish the hn data
 
 	c.AddFunc(cfg.Cron, run)
 
