@@ -16,18 +16,17 @@ type Writer interface {
 
 // Worker holds the execution logic that gets and saves items
 type Worker struct {
-	provider publisher.Provider
-	writer   Writer
-	idChan   chan int
+	Provider publisher.Provider
+	Writer   Writer
 }
 
-func (w Worker) Run(ctx context.Context) {
-	for id := range w.idChan {
-		item, err := w.provider.GetItem(id)
+func (w Worker) Run(ctx context.Context, idChan chan int) {
+	for id := range idChan {
+		item, err := w.Provider.GetItem(id)
 		if err != nil {
 			log.Print(errors.Wrap(err, "worker"))
 		} else if !item.Dead && !item.Deleted {
-			_, err := w.writer.SaveItem(ctx, *item)
+			_, err := w.Writer.SaveItem(ctx, *item)
 			if err != nil {
 				log.Print(errors.Wrap(err, "worker"))
 			}

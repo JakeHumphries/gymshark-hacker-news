@@ -14,12 +14,12 @@ type MockWriter struct {
 }
 
 func (m *MockWriter) SaveItem(ctx context.Context, item models.Item) (*models.Item, error) {
-	m.Called()
+	m.Called(ctx, item)
 	return nil, nil
 }
 
 func (m *MockWriter) GetAllItems(ctx context.Context) ([]models.Item, error) {
-	m.Called()
+	m.Called(ctx)
 	return nil, nil
 }
 
@@ -42,39 +42,20 @@ func (m *MockProvider) GetItem(id int) (*models.Item, error) {
 	return itemArg, args.Error(1)
 }
 
-type MockConsumer struct {
-	mock.Mock
-}
-
-func (m *MockConsumer) Consume(idChan chan int) error {
-	m.Called()
-
-	var id = 1
-	for i := 0; i < 3; i++ {
-		idChan <- id
-		id++
-	}
-	return nil
-}
-
 func TestConsumer_Run(t *testing.T) {
-
 	tests := []struct {
 		name       string
 		writer     *MockWriter
 		provider   *MockProvider
-		consumer   *MockConsumer
-		expected   func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider, consumerMock *MockConsumer)
+		expected   func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider)
 		assertions func(writerMock *MockWriter)
 	}{
 		{
 			name:     "calls saveItem for every item returned from provider",
 			writer:   &MockWriter{},
 			provider: &MockProvider{},
-			consumer: &MockConsumer{},
-			expected: func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider, consumerMock *MockConsumer) {
+			expected: func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider) {
 				writerMock.On("SaveItem").Return(nil)
-				consumerMock.On("Consume").Return(nil)
 				providerMock.On("GetItem", 1).Return(&models.Item{Id: 1}, nil)
 				providerMock.On("GetItem", 2).Return(&models.Item{Id: 2}, nil)
 				providerMock.On("GetItem", 3).Return(&models.Item{Id: 3}, nil)
@@ -88,10 +69,8 @@ func TestConsumer_Run(t *testing.T) {
 			name:     "doesnt call saveItem when item is set to deleted or dead",
 			writer:   &MockWriter{},
 			provider: &MockProvider{},
-			consumer: &MockConsumer{},
-			expected: func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider, consumerMock *MockConsumer) {
+			expected: func(t *testing.T, writerMock *MockWriter, providerMock *MockProvider) {
 				writerMock.On("SaveItem").Return(nil)
-				consumerMock.On("Consume").Return(nil)
 				providerMock.On("GetItem", 1).Return(&models.Item{Id: 1, Dead: true}, nil)
 				providerMock.On("GetItem", 2).Return(&models.Item{Id: 2, Deleted: true}, nil)
 				providerMock.On("GetItem", 3).Return(&models.Item{Id: 3, Dead: true, Deleted: true}, nil)
@@ -105,22 +84,23 @@ func TestConsumer_Run(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.expected != nil {
-				tt.expected(t, tt.writer, tt.provider, tt.consumer)
+				tt.expected(t, tt.writer, tt.provider)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
+			
+			idChan := make(chan int)
 
-			cfg := models.Config{
-				DatabaseName:     "testName",
-				DatabaseUser:     "testUser",
-				DatabasePassword: "testPass",
-				DatabasePort:     "testPort",
-				Cron:             "0 30 * * * *",
-				WorkerCount:      10,
+			var id = 1
+			for i := 0; i < 3; i++ {
+				idChan <- id
+				id++
 			}
 
-			Run(ctx, &cfg, tt.consumer, tt.provider, tt.writer)
+			w := Worker{tt.provider, tt.writer}
+
+			w.Run(ctx, idChan)
 
 			if tt.assertions != nil {
 				tt.assertions(tt.writer)
