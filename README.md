@@ -1,13 +1,15 @@
 ## Hacker News Onboarding Project
 
-This is a project to help get up to speed with the WoW, stack and tooling the gymshark software team uses :rocket:  It is a monorepo that is comprised of the following services:
+This is a project to help get up to speed with the WoW, stack and tooling the gymshark software team uses. :rocket:  
 
-- RabbitMQ Publisher Service to get information from the Hacker News API and publish messages to a queue. It pulls from the hackernews api periodically via a cron job. 
-- RabbitMQ Consumer Service to spawn worker processes to read from the queue and save to a database.
-- API Service to forward requests to GRPC service 
-- GRPC Service to read and return items from the database
+It is a monorepo that is comprised of the following services:
 
-:warning:  Although this project has got some unit tests it is by no means fully tested  :warning:
+- **RabbitMQ Publisher Service:** to get information from the Hacker News API and publish messages to a queue. It pulls from the hackernews api periodically via a cron job. 
+- **RabbitMQ Consumer Service:** to spawn worker processes to read from the queue and save to a database.
+- **API Service:** to forward requests to GRPC service 
+- **GRPC Service:** to read and return items from the database
+
+:warning: *Although this project has got some unit tests it is by no means fully tested*:warning:
 
 ## Running Locally
 
