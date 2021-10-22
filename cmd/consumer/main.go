@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/consumer"
 	"github.com/JakeHumphries/gymshark-hacker-news/internal/hackernews"
@@ -15,16 +17,14 @@ import (
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("loading .env file: %s", err)
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatalf("loading .env file %s", err)
 	}
 
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	cfg, err := models.GetConfig()
@@ -43,7 +43,25 @@ func main() {
 	}
 	defer q.Close()
 
-	if err := consumer.Run(ctx, cfg, q, hackernews.Api{}, repo); err != nil {
-		log.Fatalf("running consumer: %s", err)
+	var wg sync.WaitGroup
+
+	idChan := make(chan int)
+
+	w := consumer.Worker{Provider: hackernews.Api{}, Writer: repo}
+
+	for i := 0; i < cfg.WorkerCount; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			w.Run(ctx, idChan)
+		}()
+
 	}
+
+	q.Consume(idChan)
+
+	close(idChan)
+
+	wg.Wait()
 }
