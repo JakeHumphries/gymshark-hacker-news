@@ -14,10 +14,8 @@ import (
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("loading .env file: %s", err)
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatalf("loading .env file %s", err)
 	}
 }
 
